@@ -10,7 +10,8 @@
 <text x="960.0" y="84.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#55617a" text-anchor="middle">Effect</text>
 <line x1="24" y1="96" x2="1076" y2="96" stroke="#b8c2d3"/>
 <rect x="24.0" y="103.0" width="1052.0" height="42.0" rx="6" fill="#edf1f7"/>
-<text x="40.0" y="129.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Null field</text>
+<text x="40.0" y="123.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Null field</text>
+<text x="40.0" y="138.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#55617a" text-anchor="start">1 %</text>
 <rect x="295.0" y="111.0" width="130.0" height="26.0" rx="13" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.3"/>
 <text x="360.0" y="128.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Kept</text>
 <rect x="495.0" y="111.0" width="130.0" height="26.0" rx="13" fill="#efe0e3" stroke="#bb2f2f" stroke-width="1.3"/>
@@ -19,7 +20,8 @@
 <text x="760.0" y="128.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Rejected</text>
 <rect x="895.0" y="111.0" width="130.0" height="26.0" rx="13" fill="#efe0e3" stroke="#bb2f2f" stroke-width="1.3"/>
 <text x="960.0" y="128.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Reject rate</text>
-<text x="40.0" y="175.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Negative kWh</text>
+<text x="40.0" y="169.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Negative kWh</text>
+<text x="40.0" y="184.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#55617a" text-anchor="start">0.5 %</text>
 <rect x="295.0" y="157.0" width="130.0" height="26.0" rx="13" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.3"/>
 <text x="360.0" y="174.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Kept</text>
 <rect x="495.0" y="157.0" width="130.0" height="26.0" rx="13" fill="#efe0e3" stroke="#bb2f2f" stroke-width="1.3"/>
@@ -29,7 +31,8 @@
 <rect x="895.0" y="157.0" width="130.0" height="26.0" rx="13" fill="#efe0e3" stroke="#bb2f2f" stroke-width="1.3"/>
 <text x="960.0" y="174.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Reject rate</text>
 <rect x="24.0" y="195.0" width="1052.0" height="42.0" rx="6" fill="#edf1f7"/>
-<text x="40.0" y="221.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Unknown household</text>
+<text x="40.0" y="215.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Unknown household</text>
+<text x="40.0" y="230.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#55617a" text-anchor="start">0.5 %</text>
 <rect x="295.0" y="203.0" width="130.0" height="26.0" rx="13" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.3"/>
 <text x="360.0" y="220.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Kept</text>
 <rect x="495.0" y="203.0" width="130.0" height="26.0" rx="13" fill="#efe0e3" stroke="#bb2f2f" stroke-width="1.3"/>
@@ -38,7 +41,8 @@
 <text x="760.0" y="220.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Rejected</text>
 <rect x="895.0" y="203.0" width="130.0" height="26.0" rx="13" fill="#efe0e3" stroke="#bb2f2f" stroke-width="1.3"/>
 <text x="960.0" y="220.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Reject rate</text>
-<text x="40.0" y="267.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Out of order</text>
+<text x="40.0" y="261.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Out of order</text>
+<text x="40.0" y="276.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#55617a" text-anchor="start">3 % · ≤ 30 min</text>
 <rect x="295.0" y="249.0" width="130.0" height="26.0" rx="13" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.3"/>
 <text x="360.0" y="266.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Kept</text>
 <rect x="495.0" y="249.0" width="130.0" height="26.0" rx="13" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.3"/>
@@ -47,7 +51,8 @@
 <text x="760.0" y="266.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Counted</text>
 <text x="960.0" y="267.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#55617a" text-anchor="middle">—</text>
 <rect x="24.0" y="287.0" width="1052.0" height="42.0" rx="6" fill="#edf1f7"/>
-<text x="40.0" y="313.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Duplicate</text>
+<text x="40.0" y="307.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Duplicate</text>
+<text x="40.0" y="322.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#55617a" text-anchor="start">2 %</text>
 <rect x="295.0" y="295.0" width="130.0" height="26.0" rx="13" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.3"/>
 <text x="360.0" y="312.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Kept</text>
 <rect x="495.0" y="295.0" width="130.0" height="26.0" rx="13" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.3"/>
@@ -55,7 +60,8 @@
 <rect x="695.0" y="295.0" width="130.0" height="26.0" rx="13" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.3"/>
 <text x="760.0" y="312.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Removed</text>
 <text x="960.0" y="313.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#55617a" text-anchor="middle">—</text>
-<text x="40.0" y="359.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Late reading</text>
+<text x="40.0" y="353.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Late reading</text>
+<text x="40.0" y="368.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#55617a" text-anchor="start">dropout · 0.2 %</text>
 <rect x="295.0" y="341.0" width="130.0" height="26.0" rx="13" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.3"/>
 <text x="360.0" y="358.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Kept</text>
 <rect x="495.0" y="341.0" width="130.0" height="26.0" rx="13" fill="#ece6de" stroke="#a3620a" stroke-width="1.3"/>
@@ -65,7 +71,8 @@
 <rect x="895.0" y="341.0" width="130.0" height="26.0" rx="13" fill="#dae8e9" stroke="#0d7366" stroke-width="1.3"/>
 <text x="960.0" y="358.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Data effect</text>
 <rect x="24.0" y="379.0" width="1052.0" height="42.0" rx="6" fill="#edf1f7"/>
-<text x="40.0" y="405.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Stale tariff</text>
+<text x="40.0" y="399.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Stale tariff</text>
+<text x="40.0" y="414.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#55617a" text-anchor="start">by design</text>
 <text x="360.0" y="405.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#55617a" text-anchor="middle">—</text>
 <rect x="495.0" y="387.0" width="130.0" height="26.0" rx="13" fill="#ece6de" stroke="#a3620a" stroke-width="1.3"/>
 <text x="560.0" y="404.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="middle">Priced D−1</text>

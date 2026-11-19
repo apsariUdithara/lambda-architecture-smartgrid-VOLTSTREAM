@@ -17,19 +17,24 @@
 <text x="455.0" y="108.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#e3e9f2" text-anchor="middle">Prometheus</text>
 <text x="455.0" y="125.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#9aa6bc" text-anchor="middle">[5 alert rules]</text>
 <rect x="310.0" y="142.0" width="290.0" height="36.0" rx="6" fill="#0e131b" stroke="#4cc4b2" stroke-width="1"/>
-<text x="324.0" y="165.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="12.5" font-weight="600" fill="#e3e9f2" text-anchor="start">LowRenewableContribution</text>
+<text x="320.0" y="165.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11.5" font-weight="600" fill="#e3e9f2" text-anchor="start">LowRenewableContribution</text>
+<text x="568.0" y="165.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#9aa6bc" text-anchor="end">&lt; 0.15</text>
 <circle cx="582" cy="160" r="5.5" fill="none" stroke="#f17878" stroke-width="1.6"/>
 <rect x="310.0" y="192.0" width="290.0" height="36.0" rx="6" fill="#0e131b" stroke="#4cc4b2" stroke-width="1"/>
-<text x="324.0" y="215.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="12.5" font-weight="600" fill="#e3e9f2" text-anchor="start">HighRejectRate</text>
+<text x="320.0" y="215.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11.5" font-weight="600" fill="#e3e9f2" text-anchor="start">HighRejectRate</text>
+<text x="568.0" y="215.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#9aa6bc" text-anchor="end">&gt; 5 %</text>
 <circle cx="582" cy="210" r="5.5" fill="none" stroke="#f17878" stroke-width="1.6"/>
 <rect x="310.0" y="242.0" width="290.0" height="36.0" rx="6" fill="#0e131b" stroke="#4cc4b2" stroke-width="1"/>
-<text x="324.0" y="265.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="12.5" font-weight="600" fill="#e3e9f2" text-anchor="start">MeterDataStale</text>
+<text x="320.0" y="265.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11.5" font-weight="600" fill="#e3e9f2" text-anchor="start">MeterDataStale</text>
+<text x="568.0" y="265.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#9aa6bc" text-anchor="end">&gt; 2 min</text>
 <circle cx="582" cy="260" r="6" fill="#f17878"/>
 <rect x="310.0" y="292.0" width="290.0" height="36.0" rx="6" fill="#0e131b" stroke="#4cc4b2" stroke-width="1"/>
-<text x="324.0" y="315.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="12.5" font-weight="600" fill="#e3e9f2" text-anchor="start">BatchSLAMiss</text>
+<text x="320.0" y="315.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11.5" font-weight="600" fill="#e3e9f2" text-anchor="start">BatchSLAMiss</text>
+<text x="568.0" y="315.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#9aa6bc" text-anchor="end">&gt; 15 min</text>
 <circle cx="582" cy="310" r="6" fill="#f17878"/>
 <rect x="310.0" y="342.0" width="290.0" height="36.0" rx="6" fill="#0e131b" stroke="#4cc4b2" stroke-width="1"/>
-<text x="324.0" y="365.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="12.5" font-weight="600" fill="#e3e9f2" text-anchor="start">LambdaDivergenceHigh</text>
+<text x="320.0" y="365.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11.5" font-weight="600" fill="#e3e9f2" text-anchor="start">LambdaDivergenceHigh</text>
+<text x="568.0" y="365.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#9aa6bc" text-anchor="end">&gt; 5 %</text>
 <circle cx="582" cy="360" r="5.5" fill="none" stroke="#f17878" stroke-width="1.6"/>
 <rect x="690.0" y="180.0" width="180.0" height="64.0" rx="10" fill="#193336" stroke="#4cc4b2" stroke-width="1.6"/>
 <text x="780.0" y="210.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#e3e9f2" text-anchor="middle">Alertmanager</text>

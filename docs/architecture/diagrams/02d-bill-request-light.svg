@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="480" viewBox="0 0 1080 480" role="img" aria-labelledby="title desc">
+<title id="title">Voltstream sequence: bill request and merge</title>
+<desc id="desc">The dashboard asks the API for a household's bill for day D. The API checks the run ledger for a successful run. If there is one it returns the batch row as final; otherwise it returns the speed estimate as provisional, or 404 if there is none.</desc>
+<defs><marker id="ah-final-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2a5ea8"/></marker><marker id="ah-final-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#2a5ea8" stroke-width="1.6"/></marker><marker id="ah-muted-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#55617a"/></marker><marker id="ah-muted-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#55617a" stroke-width="1.6"/></marker><marker id="ah-provisional-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3620a"/></marker><marker id="ah-provisional-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M1,1 L9,5 L1,9" fill="none" stroke="#a3620a" stroke-width="1.6"/></marker></defs>
+<rect width="1080" height="480" fill="#f6f8fb"/>
+<text x="24.0" y="36.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="650" fill="#172033" text-anchor="start">Bill request · the merge function</text>
+<line x1="110" y1="108" x2="110" y2="430" stroke="#b8c2d3" stroke-width="1.2" stroke-dasharray="4 4"/>
+<rect x="18.0" y="62.0" width="184.0" height="46.0" rx="8" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.4"/>
+<text x="110.0" y="82.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#172033" text-anchor="middle">Dashboard</text>
+<text x="110.0" y="98.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#55617a" text-anchor="middle">web</text>
+<line x1="310" y1="108" x2="310" y2="430" stroke="#b8c2d3" stroke-width="1.2" stroke-dasharray="4 4"/>
+<rect x="218.0" y="62.0" width="184.0" height="46.0" rx="8" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.4"/>
+<text x="310.0" y="82.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#172033" text-anchor="middle">API</text>
+<text x="310.0" y="98.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#55617a" text-anchor="middle">FastAPI</text>
+<line x1="510" y1="108" x2="510" y2="430" stroke="#b8c2d3" stroke-width="1.2" stroke-dasharray="4 4"/>
+<rect x="418.0" y="62.0" width="184.0" height="46.0" rx="8" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.4"/>
+<text x="510.0" y="82.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#172033" text-anchor="middle">Run ledger</text>
+<text x="510.0" y="98.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#55617a" text-anchor="middle">PostgreSQL</text>
+<line x1="710" y1="108" x2="710" y2="430" stroke="#b8c2d3" stroke-width="1.2" stroke-dasharray="4 4"/>
+<rect x="618.0" y="62.0" width="184.0" height="46.0" rx="8" fill="#dee6f1" stroke="#2a5ea8" stroke-width="1.4"/>
+<text x="710.0" y="82.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#172033" text-anchor="middle">Batch views</text>
+<text x="710.0" y="98.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#55617a" text-anchor="middle">PostgreSQL</text>
+<line x1="910" y1="108" x2="910" y2="430" stroke="#b8c2d3" stroke-width="1.2" stroke-dasharray="4 4"/>
+<rect x="818.0" y="62.0" width="184.0" height="46.0" rx="8" fill="#ece6de" stroke="#a3620a" stroke-width="1.4"/>
+<text x="910.0" y="82.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="650" fill="#172033" text-anchor="middle">Speed views</text>
+<text x="910.0" y="98.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#55617a" text-anchor="middle">PostgreSQL</text>
+<path d="M110.0,140.0 L307.0,140.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M110.0,140.0 L307.0,140.0" fill="none" stroke="#55617a" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-muted-f)"/>
+<rect x="135.0" y="122.5" width="138.2" height="15.5" rx="3" fill="#f6f8fb"/>
+<text x="138.0" y="133.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#55617a" text-anchor="start">GET bill (household, D)</text>
+<circle cx="124.0" cy="140.0" r="8.5" fill="#55617a"/>
+<text x="124.0" y="143.8" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#f6f8fb" text-anchor="middle">1</text>
+<path d="M310.0,172.0 L507.0,172.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M310.0,172.0 L507.0,172.0" fill="none" stroke="#55617a" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-muted-f)"/>
+<rect x="335.0" y="154.5" width="109.5" height="15.5" rx="3" fill="#f6f8fb"/>
+<text x="338.0" y="165.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#55617a" text-anchor="start">success run for D?</text>
+<circle cx="324.0" cy="172.0" r="8.5" fill="#55617a"/>
+<text x="324.0" y="175.8" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#f6f8fb" text-anchor="middle">2</text>
+<rect x="40.0" y="192.0" width="1018.0" height="218.0" rx="4" fill="none" stroke="#55617a" stroke-width="1"/>
+<path d="M40,192 h31.82 v11 l-6,6 H40 z" fill="#edf1f7" stroke="#55617a" stroke-width="1"/>
+<text x="46.0" y="205.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#172033" text-anchor="start">alt</text>
+<text x="79.8" y="205.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#55617a" text-anchor="start">[yes]</text>
+<line x1="40" y1="272" x2="1058" y2="272" stroke="#55617a" stroke-width="1" stroke-dasharray="6 4"/>
+<text x="48.0" y="287.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#55617a" text-anchor="start">[no]</text>
+<path d="M310.0,226.0 L707.0,226.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M310.0,226.0 L707.0,226.0" fill="none" stroke="#2a5ea8" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<rect x="335.0" y="208.5" width="52.0" height="15.5" rx="3" fill="#f6f8fb"/>
+<text x="338.0" y="219.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#2a5ea8" text-anchor="start">bill row</text>
+<circle cx="324.0" cy="226.0" r="8.5" fill="#2a5ea8"/>
+<text x="324.0" y="229.8" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#f6f8fb" text-anchor="middle">3</text>
+<path d="M310.0,254.0 L113.0,254.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M310.0,254.0 L113.0,254.0" fill="none" stroke="#2a5ea8" stroke-width="1.6" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#ah-final-o)"/>
+<rect x="143.8" y="236.5" width="132.5" height="15.5" rx="3" fill="#f6f8fb"/>
+<text x="210.0" y="247.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#2a5ea8" text-anchor="middle">Final · source = batch</text>
+<path d="M310.0,306.0 L907.0,306.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M310.0,306.0 L907.0,306.0" fill="none" stroke="#a3620a" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-provisional-f)"/>
+<rect x="335.0" y="288.5" width="75.0" height="15.5" rx="3" fill="#f6f8fb"/>
+<text x="338.0" y="299.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#a3620a" text-anchor="start">estimate row</text>
+<circle cx="324.0" cy="306.0" r="8.5" fill="#a3620a"/>
+<text x="324.0" y="309.8" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="700" fill="#f6f8fb" text-anchor="middle">4</text>
+<rect x="50.0" y="322.0" width="998.0" height="78.0" rx="4" fill="none" stroke="#55617a" stroke-width="1"/>
+<path d="M50,322 h31.82 v11 l-6,6 H50 z" fill="#edf1f7" stroke="#55617a" stroke-width="1"/>
+<text x="56.0" y="335.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="700" fill="#172033" text-anchor="start">alt</text>
+<text x="89.8" y="335.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#55617a" text-anchor="start">[found]</text>
+<line x1="50" y1="362" x2="1048" y2="362" stroke="#55617a" stroke-width="1" stroke-dasharray="6 4"/>
+<text x="58.0" y="377.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#55617a" text-anchor="start">[none]</text>
+<path d="M310.0,352.0 L113.0,352.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M310.0,352.0 L113.0,352.0" fill="none" stroke="#a3620a" stroke-width="1.6" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#ah-provisional-o)"/>
+<rect x="126.5" y="334.5" width="167.0" height="15.5" rx="3" fill="#f6f8fb"/>
+<text x="210.0" y="345.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#a3620a" text-anchor="middle">Provisional · source = speed</text>
+<path d="M310.0,390.0 L113.0,390.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M310.0,390.0 L113.0,390.0" fill="none" stroke="#55617a" stroke-width="1.6" stroke-linejoin="round" stroke-dasharray="6 4" marker-end="url(#ah-muted-o)"/>
+<rect x="198.4" y="372.5" width="23.2" height="15.5" rx="3" fill="#f6f8fb"/>
+<text x="210.0" y="383.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#55617a" text-anchor="middle">404</text>
+<rect x="24.0" y="449.0" width="22.0" height="14.0" rx="3" fill="#ece6de" stroke="#a3620a" stroke-width="1.2"/>
+<text x="53.0" y="460.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#55617a" text-anchor="start">speed · provisional</text>
+<rect x="191.0" y="449.0" width="22.0" height="14.0" rx="3" fill="#dee6f1" stroke="#2a5ea8" stroke-width="1.2"/>
+<text x="220.0" y="460.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#55617a" text-anchor="start">batch · final</text>
+<rect x="320.7" y="449.0" width="22.0" height="14.0" rx="3" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.2"/>
+<text x="349.7" y="460.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#55617a" text-anchor="start">infrastructure</text>
+</svg>

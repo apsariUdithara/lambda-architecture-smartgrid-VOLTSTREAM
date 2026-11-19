@@ -270,25 +270,25 @@ class Svg:
 
 def overview(s: Svg) -> None:
     s.title_("System overview")
-    s.service(30, 190, 150, 64, "simulated", "Smart meters", "simulated")
-    s.service(30, 352, 150, 64, "simulated", "Tariff feed", "simulated")
-    s.topic(230, 190, 150, 64, "neutral", "Event stream", "Kafka")
-    s.service(440, 88, 190, 64, "provisional", "Speed layer", "Spark Streaming")
-    s.store(440, 278, 190, 80, "final", "Raw archive", "Parquet")
-    s.service(690, 286, 180, 64, "final", "Batch layer", "Airflow · Spark")
-    s.store(920, 176, 140, 92, "neutral", "Serving DB", "PostgreSQL")
-    s.service(1100, 190, 130, 64, "neutral", "API", "FastAPI")
-    s.service(1100, 330, 130, 64, "neutral", "Dashboard", "web")
+    s.service(30, 190, 160, 64, "simulated", "Smart meters", "simulated · every 2 s")
+    s.service(30, 352, 160, 64, "simulated", "Tariff feed", "simulated · daily")
+    s.topic(230, 190, 170, 64, "neutral", "Event stream", "Kafka · 3 partitions")
+    s.service(450, 88, 200, 64, "provisional", "Speed layer", "Spark Streaming · seconds")
+    s.store(450, 278, 200, 80, "final", "Raw archive", "Parquet · append-only")
+    s.service(705, 286, 180, 64, "final", "Batch layer", "Airflow · Spark · daily")
+    s.store(935, 176, 140, 92, "neutral", "Serving DB", "PostgreSQL")
+    s.service(1115, 190, 130, 64, "neutral", "API", "FastAPI · merge")
+    s.service(1115, 330, 130, 64, "neutral", "Dashboard", "web")
 
-    s.edge([(180, 222), (230, 222)], "simulated")
-    s.edge([(380, 210), (410, 210), (410, 120), (440, 120)], "provisional")
-    s.edge([(380, 236), (410, 236), (410, 318), (440, 318)], "final")
-    s.edge([(630, 318), (690, 318)], "final", "replay")
-    s.edge([(180, 384), (780, 384), (780, 350)], "simulated", "daily tariff", at=(470, 377))
-    s.edge([(630, 120), (990, 120), (990, 176)], "provisional", "estimates", at=(810, 113))
-    s.edge([(870, 318), (990, 318), (990, 268)], "final", "exact bills", at=(925, 311))
-    s.edge([(1060, 222), (1100, 222)], "neutral")
-    s.edge([(1165, 330), (1165, 254)], "neutral")
+    s.edge([(190, 222), (230, 222)], "simulated")
+    s.edge([(400, 210), (425, 210), (425, 120), (450, 120)], "provisional")
+    s.edge([(400, 236), (425, 236), (425, 318), (450, 318)], "final")
+    s.edge([(650, 318), (705, 318)], "final", "replay")
+    s.edge([(190, 384), (795, 384), (795, 350)], "simulated", "daily tariff", at=(480, 377))
+    s.edge([(650, 120), (1005, 120), (1005, 176)], "provisional", "estimates", at=(830, 113))
+    s.edge([(885, 318), (1005, 318), (1005, 268)], "final", "exact bills", at=(945, 311))
+    s.edge([(1075, 222), (1115, 222)], "neutral")
+    s.edge([(1180, 330), (1180, 254)], "neutral")
     s.legend(["simulated", "provisional", "final", "neutral"])
 
 
@@ -297,142 +297,253 @@ def overview(s: Svg) -> None:
 # =========================================================================================
 
 
+def kafka_topic(s: Svg, x, y, w, h, name, tech, partitions=3):  # noqa: ANN001
+    """A topic drawn as what it is: an ordered log, one lane per partition."""
+    s.topic(x, y, w, h, "neutral", "", None)
+    s.text(x + w / 2 - 4, y + 21, name, 14, "ink", 650, "middle")
+    s.text(x + w / 2 - 4, y + 36, f"[{tech}]", 11, "muted", anchor="middle")
+    for p in range(partitions):
+        ly = y + 46 + p * 18
+        s.text(x + 18, ly + 11, f"P{p}", 10, "muted", 700, mono=True)
+        for j in range(5):
+            s.rect(x + 40 + j * 27, ly, 24, 14, s.t["bg"], s.t["line"], r=2, sw=1)
+        s.text(x + 40 + 5 * 27 + 2, ly + 11, "→", 11, "muted")
+
+
 def data_flow(s: Svg) -> None:
     s.title_("Containers and data flow")
-    s.service(30, 150, 140, 64, "simulated", "Meters", "simulated")
-    s.service(30, 430, 140, 64, "simulated", "Tariff feed", "simulated")
+    s.service(30, 150, 150, 64, "simulated", "Meters", "simulated · every 2 s")
+    s.service(30, 470, 150, 64, "simulated", "Tariff feed", "simulated · daily")
 
-    s.topic(220, 150, 170, 64, "neutral", "meter.readings", "Kafka")
-    s.topic(475, 66, 170, 54, "unused", "readings.dlq", "Kafka · unread")
-    s.service(220, 290, 170, 64, "final", "Raw archiver", "Spark Streaming")
-    s.store(220, 420, 170, 80, "neutral", "Landing", "MinIO")
+    kafka_topic(s, 210, 136, 210, 108, "meter.readings", "Kafka · key household_id")
+    s.service(210, 336, 210, 64, "final", "Raw archiver", "Spark Streaming · append-only")
+    s.store(210, 462, 210, 80, "neutral", "Landing", "MinIO · tariff_D.csv")
 
-    s.service(475, 150, 170, 64, "provisional", "Speed layer", "Spark Streaming")
-    s.store(475, 282, 170, 80, "final", "Master dataset", "Parquet · MinIO")
-    s.service(705, 290, 160, 64, "final", "Batch layer", "Airflow · Spark")
+    s.rect(490, 112, 230, 208, s.fill("provisional"), s.stroke("provisional"), r=12, sw=1.6)
+    s.text(605, 136, "Speed layer", 14, "ink", 650, "middle")
+    s.text(605, 152, "[Spark Structured Streaming]", 11, "muted", anchor="middle")
+    s.text(605, 166, "trigger 10 s · watermark 30 min", 11, "muted", anchor="middle")
+    for y, name, tag in ((176, "Validation", "reject rules"),
+                         (222, "Zone windows", "15 min"),
+                         (268, "Household totals", "daily · tariff D−1")):
+        s.rect(502, y, 206, 40, s.t["bg"], s.stroke("provisional"), r=6, sw=1)
+        s.text(514, y + 25, name, 12.5, "ink", 650)
+        s.text(698, y + 25, tag, 10.5, "muted", anchor="end")
 
-    s.group(905, 112, 170, 340, "PostgreSQL")
-    s.store(925, 140, 130, 62, "provisional", "Speed views")
-    s.store(925, 214, 130, 62, "failure", "Rejects")
-    s.store(925, 290, 130, 62, "final", "Batch views")
-    s.store(925, 370, 130, 62, "final", "Run ledger")
+    s.topic(770, 70, 170, 46, "unused", "readings.dlq", "Kafka · unread")
+    s.store(490, 334, 230, 80, "final", "Master dataset", "Parquet · sim_date / hour")
+    s.service(770, 342, 170, 64, "final", "Batch layer", "Airflow · Spark")
 
-    s.service(1110, 250, 120, 64, "neutral", "API", "FastAPI")
-    s.service(1110, 390, 120, 64, "neutral", "Dashboard", "web")
+    s.group(990, 112, 180, 370, "PostgreSQL")
+    s.store(1005, 150, 150, 58, "failure", "Rejects")
+    s.store(1005, 222, 150, 58, "provisional", "Speed views")
+    s.store(1005, 334, 150, 58, "final", "Batch views")
+    s.store(1005, 410, 150, 58, "final", "Run ledger")
 
-    s.edge([(170, 182), (220, 182)], "simulated", "publish", at=(195, 172))
-    s.edge([(170, 462), (220, 462)], "simulated", "drop", at=(195, 452))
-    s.edge([(390, 182), (475, 182)], "provisional", "consume")
-    s.edge([(305, 214), (305, 290)], "final", "consume", at=(313, 256), anchor="start")
-    s.edge([(390, 322), (475, 322)], "final", "append", at=(413, 315))
-    s.edge([(560, 150), (560, 120)], "failure")
-    s.label(568, 140, "invalid", color="failure", anchor="start")
-    s.edge([(390, 448), (440, 448), (440, 204), (475, 204)], "provisional", "tariff D−1",
-           at=(446, 240), anchor="start")
-    s.edge([(390, 478), (785, 478), (785, 354)], "final", "tariff D", at=(600, 471))
-    s.edge([(645, 322), (705, 322)], "final", "rescan")
-    s.edge([(645, 172), (925, 172)], "provisional", "upsert", at=(785, 165))
-    s.edge([(645, 196), (895, 196), (895, 245), (925, 245)], "failure", "invalid",
-           at=(785, 189))
-    s.edge([(865, 314), (925, 314)], "final", "write")
-    s.edge([(865, 338), (890, 338), (890, 400), (925, 400)], "final", "commit",
-           at=(884, 378), anchor="end")
-    s.edge([(1075, 282), (1110, 282)], "neutral", "read", at=(1092, 272))
-    s.edge([(1170, 390), (1170, 314)], "neutral", "poll", at=(1178, 357), anchor="start")
+    s.service(1200, 262, 124, 64, "neutral", "API", "FastAPI · merge")
+    s.service(1200, 400, 124, 64, "neutral", "Dashboard", "web")
+
+    s.edge([(180, 182), (210, 182)], "simulated")
+    s.edge([(180, 502), (210, 502)], "simulated")
+    s.edge([(420, 196), (490, 196)], "provisional", "consume ×3", at=(455, 188))
+    s.edge([(315, 244), (315, 336)], "final", "consume", at=(323, 294), anchor="start")
+    s.edge([(420, 368), (490, 368)], "final", "append", at=(440, 361))
+    s.edge([(420, 484), (465, 484), (465, 296), (502, 296)], "provisional", "tariff D−1",
+           at=(470, 432), anchor="start")
+    s.edge([(420, 522), (855, 522), (855, 406)], "final", "tariff D", at=(640, 515))
+    s.edge([(720, 374), (770, 374)], "final", "rescan")
+    s.edge([(708, 186), (745, 186), (745, 93), (770, 93)], "failure", "dead letters",
+           at=(752, 140), anchor="start")
+    s.edge([(708, 198), (1005, 198)], "failure", "invalid", at=(860, 191))
+    s.edge([(708, 242), (1005, 242)], "provisional", "upsert", at=(860, 235))
+    s.edge([(708, 288), (975, 288), (975, 262), (1005, 262)], "provisional", "upsert",
+           at=(860, 281))
+    s.edge([(940, 362), (1005, 362)], "final", "write", at=(972, 354))
+    s.edge([(940, 388), (965, 388), (965, 440), (1005, 440)], "final", "commit",
+           at=(958, 420), anchor="end")
+    s.edge([(1170, 294), (1200, 294)], "neutral")
+    s.edge([(1262, 400), (1262, 326)], "neutral", "poll 5 s", at=(1270, 368),
+           anchor="start")
     s.legend(["simulated", "provisional", "final", "failure", "neutral", "unused"])
 
 
 # =========================================================================================
-# 02 · One simulated day (sequence)
+# 02a–d · Sequence diagrams
 # =========================================================================================
 
-LIFELINES = [
-    ("meters", "Meters", "simulated"),
-    ("kafka", "Kafka", "neutral"),
-    ("archiver", "Archiver", "final"),
-    ("speed", "Speed layer", "provisional"),
-    ("pg", "PostgreSQL", "neutral"),
-    ("api", "API", "neutral"),
-    ("tariff", "Tariff feed", "simulated"),
-    ("minio", "MinIO", "neutral"),
-    ("airflow", "Airflow", "control"),
-]
 
+class Seq:
+    """Lifelines and the usual grammar: numbered messages, replies, frames, dividers."""
 
-def day_sequence(s: Svg) -> None:
-    s.title_("One simulated day")
-    X = {k: 90 + i * 135 for i, (k, *_r) in enumerate(LIFELINES)}
-    top, bottom = 62, s.h - 52
-    for key, name, role in LIFELINES:
-        x = X[key]
-        s.raw(f'<line x1="{x}" y1="{top + 38}" x2="{x}" y2="{bottom}" stroke="{s.t["line"]}" '
-              f'stroke-width="1.2" stroke-dasharray="4 4"/>')
-        s.rect(x - 56, top, 112, 38, s.fill(role), s.stroke(role), r=8, sw=1.4)
-        s.text(x, top + 24, name, 13, "ink", 650, "middle")
+    def __init__(self, s: Svg, lifelines, x0: float, step: float, top: float = 62):  # noqa: ANN001
+        self.s, self.n = s, 0
+        self.X = {k: x0 + i * step for i, (k, *_r) in enumerate(lifelines)}
+        for key, name, tag, role in lifelines:
+            x = self.X[key]
+            s.raw(f'<line x1="{x}" y1="{top + 46}" x2="{x}" y2="{s.h - 50}" '
+                  f'stroke="{s.t["line"]}" stroke-width="1.2" stroke-dasharray="4 4"/>')
+            s.rect(x - step / 2 + 8, top, step - 16, 46, s.fill(role), s.stroke(role), r=8,
+                   sw=1.4)
+            s.text(x, top + 20, name, 13, "ink", 650, "middle", maxw=step - 24)
+            s.text(x, top + 36, tag, 10.5, "muted", anchor="middle", maxw=step - 24)
 
-    n = 0
-
-    def msg(a: str, b: str, label: str, role: str, y: float, reply: bool = False) -> None:
-        nonlocal n
-        xa, xb = X[a], X[b]
-        tip = xb - 3 if xb > xa else xb + 3
-        s.edge([(xa, y), (tip, y)], role, label, at=((xa + xb) / 2, y - 7), dash=reply,
+    def msg(self, a: str, b: str, label: str, role: str, y: float, reply: bool = False) -> None:
+        s, xa, xb = self.s, self.X[a], self.X[b]
+        right = xb > xa
+        tip = xb - 3 if right else xb + 3
+        if reply:
+            at, anchor = ((xa + xb) / 2, y - 7), "middle"
+        else:
+            at, anchor = (xa + (28 if right else -28), y - 7), ("start" if right else "end")
+        s.edge([(xa, y), (tip, y)], role, label, at=at, anchor=anchor, dash=reply,
                open_head=reply)
         if not reply:
-            n += 1
-            s.num(xa + (14 if xb > xa else -14), y, n, role)
+            self.n += 1
+            s.num(xa + (14 if right else -14), y, self.n, role)
 
-    def self_call(a: str, label: str, role: str, y: float) -> None:
-        nonlocal n
-        x = X[a]
+    def self_call(self, a: str, label: str, role: str, y: float) -> None:
+        s, x = self.s, self.X[a]
         s.edge([(x, y - 7), (x + 24, y - 7), (x + 24, y + 9), (x + 3, y + 9)], role)
-        n += 1
-        s.num(x - 14, y, n, role)
-        s.label(x - 28, y + 4, label, color=role, anchor="end")
+        self.n += 1
+        s.num(x - 14, y, self.n, role)
+        s.label(x - 28, y + 4, label, color="muted" if role == "neutral" else role,
+                anchor="end")
 
-    def frame(kind: str, guard: str, x1: float, y1: float, x2: float, y2: float) -> None:
+    def frame(  # noqa: ANN001
+        self, kind: str, guard: str, x1, y1, x2, y2, alt_y=None, alt_guard=None
+    ):
+        s = self.s
         s.rect(x1, y1, x2 - x1, y2 - y1, "none", s.t["muted"], r=4, sw=1)
         tw = text_width(kind, 11) + 14
         s.raw(f'<path d="M{x1},{y1} h{tw} v11 l-6,6 H{x1} z" fill="{s.t["panel"]}" '
               f'stroke="{s.t["muted"]}" stroke-width="1"/>')
         s.text(x1 + 6, y1 + 13, kind, 11, "ink", 700)
         s.text(x1 + tw + 8, y1 + 13, guard, 11, "muted", 600)
+        if alt_y is not None:
+            s.raw(f'<line x1="{x1}" y1="{alt_y}" x2="{x2}" y2="{alt_y}" '
+                  f'stroke="{s.t["muted"]}" stroke-width="1" stroke-dasharray="6 4"/>')
+            s.text(x1 + 8, alt_y + 15, alt_guard or "", 11, "muted", 600)
 
-    def divider(label: str, y: float) -> None:
+    def divider(self, label: str, y: float) -> None:
+        s = self.s
         s.raw(f'<line x1="24" y1="{y}" x2="{s.w - 24}" y2="{y}" stroke="{s.t["ink"]}" '
               f'stroke-width="1.2" stroke-dasharray="10 5"/>')
         s.label(s.w / 2, y + 4, label, 12, "ink")
 
-    frame("loop", "[every 2 s]", 40, 116, 280, 170)
-    msg("meters", "kafka", "reading", "simulated", 156)
 
-    frame("loop", "[continuous]", 160, 186, 1100, 322)
-    msg("kafka", "archiver", "readings", "final", 226)
-    msg("archiver", "minio", "append", "final", 256)
-    msg("kafka", "speed", "micro-batch", "provisional", 284)
-    msg("speed", "pg", "upsert estimate", "provisional", 310)
+def seq_live(s: Svg) -> None:
+    s.title_("Live path · during the day")
+    q = Seq(s, [
+        ("meters", "Meters", "simulated", "simulated"),
+        ("kafka", "Kafka", "meter.readings", "neutral"),
+        ("archiver", "Raw archiver", "Spark", "final"),
+        ("minio", "MinIO", "S3", "neutral"),
+        ("speed", "Speed layer", "Spark", "provisional"),
+        ("pg", "PostgreSQL", "serving DB", "neutral"),
+        ("api", "API", "FastAPI", "neutral"),
+        ("dash", "Dashboard", "web", "neutral"),
+    ], 95, 150)
+    q.frame("loop", "[every 2 s · 50 meters]", 40, 122, 380, 176)
+    q.msg("meters", "kafka", "publish · key household_id", "simulated", 160)
 
-    msg("api", "pg", "get bill (D)", "neutral", 356)
-    msg("pg", "api", "estimate", "provisional", 382, reply=True)
+    q.frame("loop", "[continuous]", 170, 192, 690, 262)
+    q.msg("kafka", "archiver", "consume", "final", 226)
+    q.msg("archiver", "minio", "append Parquet", "final", 252)
 
-    divider("simulated midnight · day D closes", 420)
+    q.frame("loop", "[trigger every 10 s · 3 queries]", 170, 278, 940, 456)
+    q.msg("kafka", "speed", "micro-batch", "provisional", 312)
+    q.msg("speed", "minio", "tariff D−1 (cached)", "provisional", 340)
+    q.self_call("speed", "validate · dedup · window", "provisional", 370)
+    q.msg("speed", "pg", "upsert estimates", "provisional", 402)
+    q.msg("speed", "pg", "rejects", "failure", 428)
+    q.msg("speed", "kafka", "dead letters → readings.dlq", "failure", 448)
 
-    msg("tariff", "minio", "tariff D", "simulated", 460)
-    msg("airflow", "minio", "poll", "control", 494)
-    self_call("airflow", "wait 90 s", "control", 528)
+    q.frame("loop", "[every 5 s]", 620, 472, s.w - 22, 580)
+    q.msg("dash", "api", "GET zones · bill", "neutral", 506)
+    q.msg("api", "pg", "read speed views", "neutral", 532)
+    q.msg("pg", "api", "rows", "neutral", 552, reply=True)
+    q.msg("api", "dash", "provisional", "provisional", 572, reply=True)
+    s.legend(["simulated", "provisional", "final", "failure", "neutral"])
 
-    frame("alt", "[success]", 520, 560, s.w - 22, 690)
-    msg("airflow", "minio", "rescan day D", "final", 596)
-    msg("airflow", "pg", "bills + success", "final", 626)
-    s.raw(f'<line x1="520" y1="644" x2="{s.w - 22}" y2="644" stroke="{s.t["muted"]}" '
-          f'stroke-width="1" stroke-dasharray="6 4"/>')
-    s.text(528, 660, "[error]", 11, "muted", 600)
-    msg("airflow", "pg", "failed · retry", "failure", 676)
 
-    msg("airflow", "pg", "reconcile", "final", 722)
-    msg("api", "pg", "get bill (D)", "neutral", 766)
-    msg("pg", "api", "final bill", "final", 792, reply=True)
-    s.legend(["simulated", "provisional", "final", "failure", "control", "neutral"])
+def seq_billing(s: Svg) -> None:
+    s.title_("Daily billing · after midnight")
+    q = Seq(s, [
+        ("tariff", "Tariff feed", "simulated", "simulated"),
+        ("minio", "MinIO", "landing · raw", "neutral"),
+        ("airflow", "Airflow", "daily_billing DAG", "control"),
+        ("jobs", "Batch jobs", "Spark · Python", "final"),
+        ("pg", "PostgreSQL", "serving DB", "neutral"),
+        ("api", "API", "FastAPI", "neutral"),
+    ], 110, 190)
+    q.divider("simulated midnight · day D closes", 132)
+    q.msg("tariff", "minio", "put tariff_D.csv", "simulated", 168)
+    q.frame("loop", "[every 1 min]", 210, 186, 520, 230)
+    q.msg("airflow", "minio", "list tariffs", "control", 216)
+    q.self_call("airflow", "trigger billing__D", "control", 256)
+    q.msg("airflow", "minio", "sensor: tariff_D ready", "control", 290)
+    q.self_call("airflow", "grace 90 s", "control", 322)
+    q.msg("airflow", "jobs", "run billing", "control", 356)
+    q.msg("jobs", "pg", "ledger: running", "final", 384)
+    q.msg("jobs", "minio", "read day D + tariff D", "final", 412)
+    q.self_call("jobs", "dedup · validate · bill", "final", 444)
+    q.msg("jobs", "pg", "bills + success · 1 txn", "final", 476)
+    q.msg("airflow", "pg", "verify 50 bills", "control", 508)
+    q.msg("airflow", "jobs", "rollup · reconcile · report", "control", 540)
+    q.msg("jobs", "pg", "zone totals · reconciliation", "final", 568)
+    q.msg("jobs", "minio", "report_D.md", "final", 596)
+    q.msg("api", "pg", "get bill (D)", "neutral", 632)
+    q.msg("pg", "api", "final", "final", 656, reply=True)
+    s.legend(["simulated", "final", "control", "neutral"])
+
+
+def seq_failure(s: Svg) -> None:
+    s.title_("Billing failure and retry")
+    q = Seq(s, [
+        ("airflow", "Airflow", "daily_billing DAG", "control"),
+        ("job", "Billing job", "Spark", "final"),
+        ("pg", "PostgreSQL", "run ledger", "neutral"),
+        ("api", "API", "FastAPI", "neutral"),
+        ("prom", "Prometheus", "via SQL exporter", "control"),
+    ], 120, 210)
+    q.msg("airflow", "job", "run (attempt 1)", "control", 140)
+    q.msg("job", "pg", "ledger: running", "final", 168)
+    q.self_call("job", "error", "failure", 198)
+    q.msg("job", "pg", "ledger: failed", "failure", 228)
+    q.msg("job", "airflow", "exit 1", "failure", 252, reply=True)
+
+    q.frame("loop", "[≤ 2 retries · 30 s backoff]", 40, 272, 700, 440)
+    q.msg("airflow", "job", "run (retry)", "control", 304)
+    q.frame("alt", "[succeeds]", 240, 320, 690, 430, 372, "[fails again]")
+    q.msg("job", "pg", "bills + success", "final", 354)
+    q.msg("job", "pg", "ledger: failed", "failure", 412)
+
+    q.msg("api", "pg", "get bill (D)", "neutral", 466)
+    q.msg("pg", "api", "no success → estimate", "provisional", 492, reply=True)
+    q.msg("prom", "pg", "last success age", "control", 530)
+    q.self_call("prom", "> 15 min → BatchSLAMiss", "failure", 562)
+    s.legend(["provisional", "final", "failure", "control", "neutral"])
+
+
+def seq_request(s: Svg) -> None:
+    s.title_("Bill request · the merge function")
+    q = Seq(s, [
+        ("dash", "Dashboard", "web", "neutral"),
+        ("api", "API", "FastAPI", "neutral"),
+        ("ledger", "Run ledger", "PostgreSQL", "neutral"),
+        ("batch", "Batch views", "PostgreSQL", "final"),
+        ("speed", "Speed views", "PostgreSQL", "provisional"),
+    ], 110, 200)
+    q.msg("dash", "api", "GET bill (household, D)", "neutral", 140)
+    q.msg("api", "ledger", "success run for D?", "neutral", 172)
+    q.frame("alt", "[yes]", 40, 192, s.w - 22, 410, 272, "[no]")
+    q.msg("api", "batch", "bill row", "final", 226)
+    q.msg("api", "dash", "Final · source = batch", "final", 254, reply=True)
+    q.msg("api", "speed", "estimate row", "provisional", 306)
+    q.frame("alt", "[found]", 50, 322, s.w - 32, 400, 362, "[none]")
+    q.msg("api", "dash", "Provisional · source = speed", "provisional", 352, reply=True)
+    q.msg("api", "dash", "404", "neutral", 390, reply=True)
+    s.legend(["provisional", "final", "neutral"])
 
 
 # =========================================================================================
@@ -507,22 +618,24 @@ def faults(s: Svg) -> None:
     kept, rejected = ("Kept", "neutral"), ("Rejected", "failure")
     counted, removed = ("Counted", "neutral"), ("Removed", "neutral")
     reject_rate = ("Reject rate", "failure")
+    # (fault, injected rate from config/base.yaml, outcome per column)
     rows = [
-        ("Null field", [kept, rejected, rejected, reject_rate]),
-        ("Negative kWh", [kept, rejected, rejected, reject_rate]),
-        ("Unknown household", [kept, rejected, rejected, reject_rate]),
-        ("Out of order", [kept, counted, counted, None]),
-        ("Duplicate", [kept, removed, removed, None]),
-        ("Late reading", [kept, ("Dropped", "provisional"), ("Counted", "final"),
-                          ("Data effect", "control")]),
-        ("Stale tariff", [None, ("Priced D−1", "provisional"), ("Priced D", "final"),
-                          ("Tariff effect", "control")]),
+        ("Null field", "1 %", [kept, rejected, rejected, reject_rate]),
+        ("Negative kWh", "0.5 %", [kept, rejected, rejected, reject_rate]),
+        ("Unknown household", "0.5 %", [kept, rejected, rejected, reject_rate]),
+        ("Out of order", "3 % · ≤ 30 min", [kept, counted, counted, None]),
+        ("Duplicate", "2 %", [kept, removed, removed, None]),
+        ("Late reading", "dropout · 0.2 %", [kept, ("Dropped", "provisional"),
+                                            ("Counted", "final"), ("Data effect", "control")]),
+        ("Stale tariff", "by design", [None, ("Priced D−1", "provisional"),
+                                       ("Priced D", "final"), ("Tariff effect", "control")]),
     ]
-    for i, (name, cells) in enumerate(rows):
+    for i, (name, rate, cells) in enumerate(rows):
         y = 124 + i * 46
         if i % 2 == 0:
             s.rect(24, y - 21, s.w - 48, 42, s.t["panel"], r=6)
-        s.text(40, y + 5, name, 14, "ink", 650)
+        s.text(40, y - 1, name, 14, "ink", 650)
+        s.text(40, y + 14, rate, 11, "muted")
         for (_c, cx), cell in zip(cols, cells, strict=True):
             if cell is None:
                 s.text(cx, y + 5, "—", 13, "muted", anchor="middle")
@@ -540,12 +653,13 @@ def faults(s: Svg) -> None:
 # 05 · Monitoring and alerting
 # =========================================================================================
 
+# (rule, condition from config/prometheus/alert_rules.yml, severity)
 RULES = [
-    ("LowRenewableContribution", "warning"),
-    ("HighRejectRate", "warning"),
-    ("MeterDataStale", "critical"),
-    ("BatchSLAMiss", "critical"),
-    ("LambdaDivergenceHigh", "warning"),
+    ("LowRenewableContribution", "< 0.15", "warning"),
+    ("HighRejectRate", "> 5 %", "warning"),
+    ("MeterDataStale", "> 2 min", "critical"),
+    ("BatchSLAMiss", "> 15 min", "critical"),
+    ("LambdaDivergenceHigh", "> 5 %", "warning"),
 ]
 
 
@@ -558,10 +672,11 @@ def alerting(s: Svg) -> None:
     s.rect(290, 80, 330, 330, s.fill("control"), s.stroke("control"), r=12, sw=1.6)
     s.text(455, 108, "Prometheus", 14, "ink", 650, "middle")
     s.text(455, 125, "[5 alert rules]", 11, "muted", anchor="middle")
-    for i, (rule, sev) in enumerate(RULES):
+    for i, (rule, cond, sev) in enumerate(RULES):
         y = 160 + i * 50
         s.rect(310, y - 18, 290, 36, s.t["bg"], s.stroke("control"), r=6, sw=1)
-        s.text(324, y + 5, rule, 12.5, "ink", 600, mono=True)
+        s.text(320, y + 5, rule, 11.5, "ink", 600, mono=True)
+        s.text(568, y + 5, cond, 11.5, "muted", 600, anchor="end")
         red = s.col("failure")
         s.raw(f'<circle cx="582" cy="{y}" r="6" fill="{red}"/>' if sev == "critical"
               else f'<circle cx="582" cy="{y}" r="5.5" fill="none" stroke="{red}" '
@@ -746,7 +861,7 @@ DIAGRAMS = [
         "the batch layer replays once a day with that day's tariff to produce exact bills.",
         "Both write to a PostgreSQL serving database, read by the API and dashboard."),
      overview),
-    ("01-data-flow", 1260, 560, "Voltstream containers and data flow", _desc(
+    ("01-data-flow", 1350, 600, "Voltstream containers and data flow", _desc(
         "Meters publish to the meter.readings topic. The speed layer consumes it, upserts",
         "speed views in PostgreSQL and sends invalid records to the rejects table and to a",
         "dead-letter topic nothing reads. The raw archiver appends every record to the",
@@ -754,13 +869,31 @@ DIAGRAMS = [
         "bucket, writes batch views and commits the run ledger; the speed layer prices with",
         "the previous day's tariff. The API reads PostgreSQL and the dashboard polls the API."),
      data_flow),
-    ("02-day-sequence", 1260, 840, "Voltstream: one simulated day", _desc(
-        "Sequence diagram. Every 2 s meters publish readings; the archiver appends them to",
-        "MinIO and the speed layer upserts estimates. A bill request returns the estimate.",
-        "At simulated midnight the tariff feed drops tariff D; Airflow polls, waits 90 s,",
-        "rescans the day and commits bills with a success row, or marks the run failed and",
-        "retries. After reconciliation, the same request returns the final bill."),
-     day_sequence),
+    ("02a-live-path", 1260, 640, "Voltstream sequence: live path during the day", _desc(
+        "Every 2 s fifty meters publish to meter.readings, keyed by household_id. The raw",
+        "archiver appends each record to Parquet in MinIO. Every 10 s the speed layer reads",
+        "a micro-batch, loads the previous day's tariff, validates, deduplicates and windows",
+        "it, upserts estimates into PostgreSQL, and sends rejects to PostgreSQL and the",
+        "dead-letter topic. Every 5 s the dashboard reads them through the API."),
+     seq_live),
+    ("02b-daily-billing", 1240, 720, "Voltstream sequence: daily billing", _desc(
+        "At simulated midnight the tariff feed writes tariff_D.csv. Airflow, polling every",
+        "minute, triggers billing for D, waits for the file and a 90 s grace, then runs the",
+        "billing job: ledger running, read day D and its tariff, bill, and commit the bills",
+        "with a success row in one transaction. Airflow verifies 50 bills, then runs the",
+        "rollup, reconciliation and report. The API now returns the final bill."),
+     seq_billing),
+    ("02c-billing-failure", 1180, 640, "Voltstream sequence: billing failure and retry", _desc(
+        "A billing attempt marks the ledger running, fails, marks it failed and exits 1.",
+        "Airflow retries up to twice with backoff; a successful retry commits bills and a",
+        "success row. Until then the API keeps returning the speed estimate, and if no run",
+        "succeeds for 15 minutes Prometheus fires BatchSLAMiss."),
+     seq_failure),
+    ("02d-bill-request", 1080, 480, "Voltstream sequence: bill request and merge", _desc(
+        "The dashboard asks the API for a household's bill for day D. The API checks the run",
+        "ledger for a successful run. If there is one it returns the batch row as final;",
+        "otherwise it returns the speed estimate as provisional, or 404 if there is none."),
+     seq_request),
     ("03-bill-states", 1200, 440, "Voltstream bill lifecycle", _desc(
         "Two state machines. A billing run goes from running to succeeded on commit or to",
         "failed on error; a succeeded run becomes superseded when the day is restated. The",

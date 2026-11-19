@@ -84,17 +84,46 @@ go to a rejects table and a dead-letter topic that nothing reads yet.
   </picture>
 </p>
 
-### One simulated day
+### How a day flows, as sequences
 
-Steps 1–6 run all day: readings flow in, and a bill request gets the speed layer's estimate.
-At simulated midnight the day's tariff lands (7); Airflow notices it (8), waits 90 s for late
-readings (9), rescans the day and commits the bills with a `success` row (10–11), or marks the
-run failed and retries (12). From then on the same request returns the final bill (14).
+**Live path, during the day.** Readings are keyed by household, so each household's readings
+stay in order on one partition. The archiver and the speed layer read the topic independently,
+each from its own checkpoint, so either can fail without the other noticing.
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/02-day-sequence-dark.svg">
-    <img src="docs/architecture/diagrams/02-day-sequence-light.svg" alt="Sequence of one simulated day lasting 300 real seconds: readings flow every 2 seconds from meter-producer through Kafka to raw-archiver and speed-layer, and a bill request gets the provisional speed row. At simulated midnight reference-dropper writes tariff_D.csv, Airflow's tariff_watcher triggers daily_billing within a minute, which waits 90 seconds for late readings, rescans the day and in one transaction replaces the bills and marks pipeline_runs success, or marks it failed and retries. From that commit on, the API serves the batch row as final.">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/02a-live-path-dark.svg">
+    <img src="docs/architecture/diagrams/02a-live-path-light.svg" alt="Sequence diagram of the live path. Every 2 seconds fifty meters publish to the meter.readings topic, keyed by household_id. The raw archiver consumes and appends Parquet to MinIO. Every 10 seconds the speed layer reads a micro-batch, loads the previous day's tariff, validates, deduplicates and windows it, upserts estimates into PostgreSQL, and writes rejects to PostgreSQL and dead letters to Kafka. Every 5 seconds the dashboard reads the speed views through the API.">
+  </picture>
+</p>
+
+**Daily billing, after midnight.** The tariff file arriving is the signal that the day is over.
+Airflow waits 90 s for late readings, then the billing job writes the bills and the `success`
+row in one transaction: the day is billed completely or not at all.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/02b-daily-billing-dark.svg">
+    <img src="docs/architecture/diagrams/02b-daily-billing-light.svg" alt="Sequence diagram of daily billing. At simulated midnight the tariff feed writes tariff_D.csv to MinIO. Airflow, polling every minute, triggers billing for day D, checks the file is there and waits a 90 second grace, then runs the billing job, which marks the run ledger running, reads the day's readings and tariff, bills, and commits bills and a success row in one transaction. Airflow verifies 50 bills, then the rollup, reconciliation and report run. The API now returns the final bill.">
+  </picture>
+</p>
+
+**Billing failure.** A failed run leaves no partial bills, so retrying is safe. Until a run
+succeeds, the API keeps serving the estimate; if none succeeds for 15 minutes, `BatchSLAMiss` fires.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/02c-billing-failure-dark.svg">
+    <img src="docs/architecture/diagrams/02c-billing-failure-light.svg" alt="Sequence diagram of a billing failure. The billing job marks the run ledger running, hits an error, marks it failed and exits 1. Airflow retries up to twice with a 30 second backoff; a successful retry commits bills and a success row, a failing one marks the ledger failed again. Meanwhile the API returns the speed estimate, and Prometheus fires BatchSLAMiss when the last successful run is more than 15 minutes old.">
+  </picture>
+</p>
+
+**Bill request.** The whole Lambda merge is one question to the run ledger.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/02d-bill-request-dark.svg">
+    <img src="docs/architecture/diagrams/02d-bill-request-light.svg" alt="Sequence diagram of a bill request. The dashboard asks the API for a household's bill for day D. The API asks the run ledger whether day D has a successful run. If yes it returns the batch views row as Final; if no it looks up the speed views and returns the estimate as Provisional, or 404 if there is none.">
   </picture>
 </p>
 
