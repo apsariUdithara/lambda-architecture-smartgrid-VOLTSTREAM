@@ -68,11 +68,14 @@ test proves the pure-Python and Spark versions give identical bills.
 
 ### How it works in detail
 
-The picture above is all you need to run the project. The diagrams below are for reading the
-code: every box, arrow and label is a real service, table, topic or function. Colours mean the
-same thing in all of them, and numbered steps in one are referred to by the others.
+The picture above is all you need to run the project; the diagrams below are for reading the
+code. They share one notation: **boxes** are services, **cylinders** are data stores, **pipes**
+are Kafka topics, `[brackets]` give the technology, and **colour** gives the layer (amber =
+speed, blue = batch, red = rejected or failed, dashed = never read).
 
-**Where every reading goes**, and which part writes each table:
+**Containers and data flow.** The speed layer prices a day with the *previous* day's tariff
+(`tariff D−1`); the batch layer waits for that day's own tariff (`tariff D`). Invalid readings
+go to a rejects table and a dead-letter topic that nothing reads yet.
 
 <p align="center">
   <picture>
@@ -83,9 +86,10 @@ same thing in all of them, and numbered steps in one are referred to by the othe
 
 ### One simulated day
 
-The speed path runs continuously; at simulated midnight the batch path picks up the day's
-tariff, bills the closed day, and the merge switches it from provisional to final. The
-numbered steps are referred to by the diagrams below.
+Steps 1–6 run all day: readings flow in, and a bill request gets the speed layer's estimate.
+At simulated midnight the day's tariff lands (7); Airflow notices it (8), waits 90 s for late
+readings (9), rescans the day and commits the bills with a `success` row (10–11), or marks the
+run failed and retries (12). From then on the same request returns the final bill (14).
 
 <p align="center">
   <picture>

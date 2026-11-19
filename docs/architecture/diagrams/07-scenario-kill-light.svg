@@ -1,88 +1,50 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
-<title id="title">Voltstream scenario: crash the speed layer</title>
-<desc id="desc">Scenario diagram for the kill test, scripts/smoke_test.sh kill-speed-layer. The speed layer is killed with SIGKILL for 60 seconds. Meanwhile the raw archiver keeps consuming into the raw copy, the live zone view goes stale, and the final bill of an already billed day is served unchanged. After a restart the speed layer resumes from its checkpoint and catches up until the view is under 30 seconds old with zero consumer lag. When the day of the kill closes it is billed in full from the raw copy: 50 bills, and readings at least 95 percent of the day before. Losing the speed layer costs freshness, never correctness.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
+<title id="title">Voltstream scenario: speed layer crash</title>
+<desc id="desc">The speed layer is down for 60 seconds: the live view goes stale while the raw archive keeps ingesting and bills are unchanged. After a restart it catches up, and the day of the crash is billed in full.</desc>
 <defs></defs>
-<rect width="1280" height="640" fill="#f6f8fb"/>
-<text x="24.0" y="38.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="650" fill="#172033" text-anchor="start">Scenario · Crash the speed layer   (voltstream.ps1 killtest · make kill-test)</text>
-<text x="24.0" y="61.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#4e5a71" text-anchor="start">scripts/smoke_test.sh kill-speed-layer, on the running stack. ✓ marks the script's own PASS checks.</text>
-<text x="234.0" y="111.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#172033" text-anchor="start">Before</text>
-<text x="234.0" y="130.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">a day already billed</text>
-<line x1="225" y1="96" x2="225" y2="530" stroke="#b8c2d3" stroke-width="1" stroke-dasharray="2 4"/>
-<circle cx="422.0" cy="106.0" r="9" fill="#172033"/>
-<text x="422.0" y="109.8" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#f6f8fb" text-anchor="middle">1</text>
-<text x="438.0" y="111.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#172033" text-anchor="start">Kill: down 60 s</text>
-<text x="414.0" y="130.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">docker kill (SIGKILL), no clean stop</text>
-<line x1="405" y1="96" x2="405" y2="530" stroke="#b8c2d3" stroke-width="1" stroke-dasharray="2 4"/>
-<circle cx="672.0" cy="106.0" r="9" fill="#172033"/>
-<text x="672.0" y="109.8" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#f6f8fb" text-anchor="middle">2</text>
-<text x="688.0" y="111.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#172033" text-anchor="start">Restart, catch up</text>
-<text x="664.0" y="130.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">waits up to 300 s</text>
-<line x1="655" y1="96" x2="655" y2="530" stroke="#b8c2d3" stroke-width="1" stroke-dasharray="2 4"/>
-<circle cx="932.0" cy="106.0" r="9" fill="#172033"/>
-<text x="932.0" y="109.8" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#f6f8fb" text-anchor="middle">3</text>
-<text x="948.0" y="111.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#172033" text-anchor="start">The kill day closes</text>
-<text x="924.0" y="130.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">billed like any other day</text>
-<line x1="915" y1="96" x2="915" y2="530" stroke="#b8c2d3" stroke-width="1" stroke-dasharray="2 4"/>
-<rect x="20.0" y="146.0" width="1240.0" height="68.0" rx="6" fill="#ebeff6"/>
-<text x="32.0" y="178.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="650" fill="#172033" text-anchor="start">Speed layer</text>
-<text x="32.0" y="194.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="400" fill="#8a94a8" text-anchor="start">speed-layer</text>
-<rect x="20.0" y="222.0" width="1240.0" height="68.0" rx="6" fill="#ebeff6"/>
-<text x="32.0" y="254.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="650" fill="#172033" text-anchor="start">Raw copy</text>
-<text x="32.0" y="270.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="400" fill="#8a94a8" text-anchor="start">raw-archiver → MinIO</text>
-<rect x="20.0" y="298.0" width="1240.0" height="68.0" rx="6" fill="#ebeff6"/>
-<text x="32.0" y="330.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="650" fill="#172033" text-anchor="start">Live zone view</text>
-<text x="32.0" y="346.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="400" fill="#8a94a8" text-anchor="start">zone_metrics_rt</text>
-<rect x="20.0" y="374.0" width="1240.0" height="68.0" rx="6" fill="#ebeff6"/>
-<text x="32.0" y="406.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="650" fill="#172033" text-anchor="start">Final bill, earlier day</text>
-<text x="32.0" y="422.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="400" fill="#8a94a8" text-anchor="start">household_bill_daily</text>
-<rect x="20.0" y="450.0" width="1240.0" height="68.0" rx="6" fill="#ebeff6"/>
-<text x="32.0" y="482.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="650" fill="#172033" text-anchor="start">Bills for the kill day</text>
-<text x="32.0" y="498.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="400" fill="#8a94a8" text-anchor="start">household_bill_daily</text>
-<rect x="230.0" y="152.0" width="174.0" height="56.0" rx="6" fill="#ede8e0" stroke="#a3620a" stroke-width="1.2"/>
-<text x="240.0" y="184.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">running</text>
-<rect x="410.0" y="152.0" width="244.0" height="56.0" rx="6" fill="#f0e2e5" stroke="#bb2f2f" stroke-width="1.2"/>
-<text x="420.0" y="177.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">killed</text>
-<text x="420.0" y="193.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start">nothing reads the stream for it</text>
-<rect x="660.0" y="152.0" width="254.0" height="56.0" rx="6" fill="#ede8e0" stroke="#a3620a" stroke-width="1.2"/>
-<text x="670.0" y="177.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">re-reads from its checkpoint</text>
-<text x="670.0" y="193.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start">the missed minute first, then live</text>
-<rect x="920.0" y="152.0" width="340.0" height="56.0" rx="6" fill="#ede8e0" stroke="#a3620a" stroke-width="1.2"/>
-<text x="930.0" y="184.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">running</text>
-<rect x="230.0" y="228.0" width="1030.0" height="56.0" rx="6" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1.2"/>
-<text x="240.0" y="253.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">keeps consuming every reading, untouched by the crash</text>
-<text x="240.0" y="269.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start"> </text>
-<text x="420.0" y="270.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#172033" text-anchor="start">✓ kept consuming while speed was down</text>
-<rect x="230.0" y="304.0" width="174.0" height="56.0" rx="6" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1.2"/>
-<text x="240.0" y="336.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">seconds old</text>
-<rect x="410.0" y="304.0" width="244.0" height="56.0" rx="6" fill="#f0e2e5" stroke="#bb2f2f" stroke-width="1.2"/>
-<text x="420.0" y="329.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">stale: data age grows</text>
-<text x="420.0" y="345.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start">the dashboard freezes</text>
-<rect x="660.0" y="304.0" width="254.0" height="56.0" rx="6" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1.2"/>
-<text x="670.0" y="329.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">fresh again</text>
-<text x="670.0" y="345.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start"> </text>
-<text x="670.0" y="346.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#172033" text-anchor="start">✓ age &lt; 30 s, consumer lag 0</text>
-<rect x="920.0" y="304.0" width="340.0" height="56.0" rx="6" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1.2"/>
-<text x="930.0" y="336.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">seconds old</text>
-<rect x="230.0" y="380.0" width="684.0" height="56.0" rx="6" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1.2"/>
-<text x="240.0" y="405.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">same total, served by the API throughout</text>
-<text x="240.0" y="421.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start"> </text>
-<text x="420.0" y="422.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#172033" text-anchor="start">✓ unchanged during</text>
-<text x="670.0" y="422.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#172033" text-anchor="start">✓ identical before, during, after</text>
-<text x="240.0" y="490.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start" font-style="italic">not billed yet: the kill day is still open</text>
-<rect x="920.0" y="456.0" width="340.0" height="56.0" rx="6" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1.2"/>
-<text x="930.0" y="481.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">billed from the raw copy, not the speed view</text>
-<text x="930.0" y="497.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start"> </text>
-<text x="930.0" y="498.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#172033" text-anchor="start">✓ 50 bills · readings ≥ 95 % of the day before</text>
-<rect x="20.0" y="540.0" width="1240.0" height="46.0" rx="8" fill="#dce9eb" stroke="#0d7366" stroke-width="1.3"/>
-<text x="36.0" y="569.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#172033" text-anchor="start">The point: losing the speed layer costs freshness, never correctness. Bills come from the raw copy (diagram 1).</text>
-<rect x="24.0" y="607.0" width="24.0" height="14.0" rx="3" fill="#ede8e0" stroke="#a3620a" stroke-width="1.3"/>
-<text x="55.0" y="618.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">speed · provisional</text>
-<rect x="193.0" y="607.0" width="24.0" height="14.0" rx="3" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1.3"/>
-<text x="224.0" y="618.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">batch · final</text>
-<rect x="324.7" y="607.0" width="24.0" height="14.0" rx="3" fill="#f0e2e5" stroke="#bb2f2f" stroke-width="1.3"/>
-<text x="355.7" y="618.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">rejected / failed</text>
-<rect x="481.3" y="607.0" width="24.0" height="14.0" rx="3" fill="#dce9eb" stroke="#0d7366" stroke-width="1.3"/>
-<text x="512.3" y="618.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">orchestration, monitoring</text>
-<rect x="687.5" y="607.0" width="24.0" height="14.0" rx="3" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1.3"/>
-<text x="718.5" y="618.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">infrastructure</text>
+<rect width="1200" height="420" fill="#f6f8fb"/>
+<text x="24.0" y="36.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="650" fill="#172033" text-anchor="start">Scenario · speed layer crash</text>
+<text x="325.0" y="82.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#55617a" text-anchor="middle">Before</text>
+<text x="534.0" y="82.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#55617a" text-anchor="middle">Killed · 60 s</text>
+<text x="764.0" y="82.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#55617a" text-anchor="middle">Restarted</text>
+<text x="1032.0" y="82.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#55617a" text-anchor="middle">Day closes</text>
+<rect x="24.0" y="100.0" width="1152.0" height="58.0" rx="8" fill="#edf1f7"/>
+<text x="40.0" y="134.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Speed layer</text>
+<rect x="24.0" y="170.0" width="1152.0" height="58.0" rx="8" fill="#edf1f7"/>
+<text x="40.0" y="204.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Raw archive</text>
+<rect x="24.0" y="240.0" width="1152.0" height="58.0" rx="8" fill="#edf1f7"/>
+<text x="40.0" y="274.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Live view</text>
+<rect x="24.0" y="310.0" width="1152.0" height="58.0" rx="8" fill="#edf1f7"/>
+<text x="40.0" y="344.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#172033" text-anchor="start">Bills</text>
+<line x1="424" y1="66" x2="424" y2="374" stroke="#b8c2d3" stroke-dasharray="2 4"/>
+<line x1="644" y1="66" x2="644" y2="374" stroke="#b8c2d3" stroke-dasharray="2 4"/>
+<line x1="884" y1="66" x2="884" y2="374" stroke="#b8c2d3" stroke-dasharray="2 4"/>
+<rect x="230.0" y="110.0" width="190.0" height="38.0" rx="6" fill="#ece6de" stroke="#a3620a" stroke-width="1.3"/>
+<text x="325.0" y="134.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#172033" text-anchor="middle">running</text>
+<rect x="428.0" y="110.0" width="212.0" height="38.0" rx="6" fill="#efe0e3" stroke="#bb2f2f" stroke-width="1.3"/>
+<text x="534.0" y="134.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#172033" text-anchor="middle">down</text>
+<rect x="648.0" y="110.0" width="232.0" height="38.0" rx="6" fill="#ece6de" stroke="#a3620a" stroke-width="1.3"/>
+<text x="764.0" y="134.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#172033" text-anchor="middle">catch up</text>
+<rect x="888.0" y="110.0" width="288.0" height="38.0" rx="6" fill="#ece6de" stroke="#a3620a" stroke-width="1.3"/>
+<text x="1032.0" y="134.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#172033" text-anchor="middle">running</text>
+<rect x="230.0" y="180.0" width="946.0" height="38.0" rx="6" fill="#dee6f1" stroke="#2a5ea8" stroke-width="1.3"/>
+<text x="703.0" y="204.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#172033" text-anchor="middle">✓ ingesting</text>
+<rect x="230.0" y="250.0" width="190.0" height="38.0" rx="6" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.3"/>
+<text x="325.0" y="274.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#172033" text-anchor="middle">fresh</text>
+<rect x="428.0" y="250.0" width="212.0" height="38.0" rx="6" fill="#efe0e3" stroke="#bb2f2f" stroke-width="1.3"/>
+<text x="534.0" y="274.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#172033" text-anchor="middle">stale</text>
+<rect x="648.0" y="250.0" width="528.0" height="38.0" rx="6" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.3"/>
+<text x="912.0" y="274.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#172033" text-anchor="middle">✓ fresh</text>
+<rect x="230.0" y="320.0" width="650.0" height="38.0" rx="6" fill="#dee6f1" stroke="#2a5ea8" stroke-width="1.3"/>
+<text x="555.0" y="344.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#172033" text-anchor="middle">✓ unchanged</text>
+<rect x="888.0" y="320.0" width="288.0" height="38.0" rx="6" fill="#dee6f1" stroke="#2a5ea8" stroke-width="1.3"/>
+<text x="1032.0" y="344.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#172033" text-anchor="middle">✓ billed in full</text>
+<rect x="24.0" y="389.0" width="22.0" height="14.0" rx="3" fill="#ece6de" stroke="#a3620a" stroke-width="1.2"/>
+<text x="53.0" y="400.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#55617a" text-anchor="start">speed · provisional</text>
+<rect x="191.0" y="389.0" width="22.0" height="14.0" rx="3" fill="#dee6f1" stroke="#2a5ea8" stroke-width="1.2"/>
+<text x="220.0" y="400.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#55617a" text-anchor="start">batch · final</text>
+<rect x="320.7" y="389.0" width="22.0" height="14.0" rx="3" fill="#efe0e3" stroke="#bb2f2f" stroke-width="1.2"/>
+<text x="349.7" y="400.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#55617a" text-anchor="start">rejected / failed</text>
+<rect x="475.3" y="389.0" width="22.0" height="14.0" rx="3" fill="#edf1f7" stroke="#b8c2d3" stroke-width="1.2"/>
+<text x="504.3" y="400.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#55617a" text-anchor="start">infrastructure</text>
 </svg>

@@ -1,112 +1,83 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="630" viewBox="0 0 1280 630" role="img" aria-labelledby="title desc">
-<title id="title">Voltstream: which bill GET /bill returns</title>
-<desc id="desc">Two state machines. Left: a pipeline_runs row for one billing attempt (layer batch_billing) starts running, then becomes success when finalise commits, or failed on an exception or when the next attempt finds it abandoned; a success becomes superseded when a later restatement commits, in the same transaction, and a partial unique index allows at most one success per day. Right: what GET /api/v1/households/{id}/bill returns for a day. It starts at 404, becomes provisional (the speed row, priced with the previous day's tariff) after the first household micro-batch, and becomes final (the batch row) once a success row exists. A restatement keeps it final with new figures. No transition leaves final.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440" role="img" aria-labelledby="title desc">
+<title id="title">Voltstream bill lifecycle</title>
+<desc id="desc">Two state machines. A billing run goes from running to succeeded on commit or to failed on error; a succeeded run becomes superseded when the day is restated. The bill served for a day goes from not found to provisional on the first estimate, and to final once a run has succeeded; restating keeps it final.</desc>
 <defs><marker id="ah-control-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4cc4b2"/></marker><marker id="ah-failure-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f17878"/></marker><marker id="ah-final-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#72a2ec"/></marker><marker id="ah-muted-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9aa6bc"/></marker><marker id="ah-provisional-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e6a743"/></marker></defs>
-<rect width="1280" height="630" fill="#0e131b"/>
-<text x="24.0" y="38.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="650" fill="#e3e9f2" text-anchor="start">3 · Which bill GET /bill returns, and why it never goes back</text>
-<text x="24.0" y="61.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#9aa6bc" text-anchor="start">Left: the run ledger that decides it. Right: what the API serves. (n) = step n in diagram 2.</text>
-<rect x="20.0" y="92.0" width="600.0" height="470.0" rx="10" fill="none" stroke="#38465e" stroke-width="1.2"/>
-<text x="32.0" y="112.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="12" font-weight="600" fill="#9aa6bc" text-anchor="start">pipeline_runs · one row per attempt · layer = 'batch_billing'</text>
-<circle cx="56" cy="186" r="7" fill="#e3e9f2"/>
-<rect x="96.0" y="158.0" width="170.0" height="58.0" rx="14" fill="#193135" stroke="#4cc4b2" stroke-width="1.8"/>
-<text x="181.0" y="182.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700" fill="#e3e9f2" text-anchor="middle">running</text>
-<rect x="410.0" y="158.0" width="170.0" height="74.0" rx="14" fill="#1f2b3f" stroke="#72a2ec" stroke-width="1.8"/>
-<text x="495.0" y="182.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700" fill="#e3e9f2" text-anchor="middle">success</text>
-<text x="495.0" y="202.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="middle">is_day_finalised(D)</text>
-<text x="495.0" y="219.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="middle">is true</text>
-<rect x="96.0" y="388.0" width="170.0" height="58.0" rx="14" fill="#35242b" stroke="#f17878" stroke-width="1.8"/>
-<text x="181.0" y="412.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700" fill="#e3e9f2" text-anchor="middle">failed</text>
-<rect x="410.0" y="388.0" width="170.0" height="74.0" rx="14" fill="#172030" stroke="#38465e" stroke-width="1.8"/>
-<text x="495.0" y="412.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700" fill="#e3e9f2" text-anchor="middle">superseded</text>
-<text x="495.0" y="432.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="middle">kept for lineage</text>
-<path d="M63.0,186.0 L96.0,186.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
-<path d="M63.0,186.0 L96.0,186.0" fill="none" stroke="#4cc4b2" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-control-f)"/>
-<rect x="37.0" y="138.5" width="124.3" height="16.5" rx="3" fill="#0e131b"/>
-<text x="40.0" y="150.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#4cc4b2" text-anchor="start">ledger.start_run (12)</text>
-<path d="M266.0,186.0 L410.0,186.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
-<path d="M266.0,186.0 L410.0,186.0" fill="none" stroke="#72a2ec" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
-<rect x="273.0" y="166.5" width="135.6" height="16.5" rx="3" fill="#0e131b"/>
-<text x="276.0" y="178.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#72a2ec" text-anchor="start">finalise() commits (14)</text>
-<path d="M181.0,216.0 L181.0,388.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
-<path d="M181.0,216.0 L181.0,388.0" fill="none" stroke="#f17878" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-failure-f)"/>
-<rect x="187.0" y="258.5" width="146.9" height="16.5" rx="3" fill="#0e131b"/>
-<text x="190.0" y="270.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#f17878" text-anchor="start">exception → fail_run (15)</text>
-<rect x="187.0" y="279.0" width="167.7" height="16.0" rx="3" fill="#0e131b"/>
-<text x="190.0" y="290.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#9aa6bc" text-anchor="start">or the attempt was killed: the</text>
-<rect x="187.0" y="295.0" width="167.7" height="16.0" rx="3" fill="#0e131b"/>
-<text x="190.0" y="306.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#9aa6bc" text-anchor="start">next start_run marks it failed</text>
-<path d="M495.0,232.0 L495.0,388.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
-<path d="M495.0,232.0 L495.0,388.0" fill="none" stroke="#9aa6bc" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-muted-f)"/>
-<rect x="359.0" y="260.5" width="130.0" height="16.5" rx="3" fill="#0e131b"/>
-<text x="486.0" y="272.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#e3e9f2" text-anchor="end">a later run's finalise</text>
-<rect x="359.0" y="279.0" width="130.0" height="16.0" rx="3" fill="#0e131b"/>
-<text x="486.0" y="290.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#9aa6bc" text-anchor="end">demotes it, in the same</text>
-<rect x="348.2" y="295.0" width="140.8" height="16.0" rx="3" fill="#0e131b"/>
-<text x="486.0" y="306.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#9aa6bc" text-anchor="end">transaction (restatement)</text>
-<circle cx="181" cy="486" r="9" fill="none" stroke="#e3e9f2" stroke-width="1.6"/><circle cx="181" cy="486" r="5" fill="#e3e9f2"/>
-<path d="M181.0,446.0 L181.0,474.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
-<path d="M181.0,446.0 L181.0,474.0" fill="none" stroke="#9aa6bc" stroke-width="1.6" stroke-linejoin="round"/>
-<circle cx="495" cy="500" r="9" fill="none" stroke="#e3e9f2" stroke-width="1.6"/><circle cx="495" cy="500" r="5" fill="#e3e9f2"/>
-<path d="M495.0,462.0 L495.0,488.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
-<path d="M495.0,462.0 L495.0,488.0" fill="none" stroke="#9aa6bc" stroke-width="1.6" stroke-linejoin="round"/>
-<text x="36.0" y="536.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#9aa6bc" text-anchor="start">idx_runs_date_layer_success (partial unique index): at most one 'success' per (sim_date, layer).</text>
-<text x="36.0" y="552.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#9aa6bc" text-anchor="start">So 'a success row exists' is exact, even after a restatement.</text>
-<rect x="660.0" y="92.0" width="600.0" height="470.0" rx="10" fill="none" stroke="#38465e" stroke-width="1.2"/>
-<text x="672.0" y="112.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="12" font-weight="600" fill="#9aa6bc" text-anchor="start">GET /api/v1/households/{id}/bill?date=D</text>
-<circle cx="692" cy="186" r="7" fill="#e3e9f2"/>
-<rect x="724.0" y="158.0" width="160.0" height="58.0" rx="14" fill="#172030" stroke="#38465e" stroke-width="1.8"/>
-<text x="804.0" y="182.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700" fill="#e3e9f2" text-anchor="middle">404</text>
-<text x="804.0" y="202.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="middle">no row in either view</text>
-<rect x="1050.0" y="150.0" width="190.0" height="90.0" rx="14" fill="#332c22" stroke="#e6a743" stroke-width="1.8"/>
-<text x="1145.0" y="174.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700" fill="#e3e9f2" text-anchor="middle">provisional</text>
-<text x="1145.0" y="194.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="middle">source = speed</text>
-<text x="1145.0" y="211.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="middle">tariff_date = D−1</text>
-<text x="1145.0" y="228.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="middle">household_running_rt</text>
-<rect x="1050.0" y="372.0" width="190.0" height="90.0" rx="14" fill="#1f2b3f" stroke="#72a2ec" stroke-width="1.8"/>
-<text x="1145.0" y="396.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="700" fill="#e3e9f2" text-anchor="middle">final</text>
-<text x="1145.0" y="416.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="middle">source = batch</text>
-<text x="1145.0" y="433.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="middle">tariff_date = D</text>
-<text x="1145.0" y="450.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="middle">household_bill_daily</text>
-<path d="M699.0,186.0 L724.0,186.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
-<path d="M699.0,186.0 L724.0,186.0" fill="none" stroke="#9aa6bc" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-muted-f)"/>
-<path d="M884.0,186.0 L1050.0,186.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
-<path d="M884.0,186.0 L1050.0,186.0" fill="none" stroke="#e6a743" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-provisional-f)"/>
-<rect x="889.0" y="156.5" width="158.1" height="16.5" rx="3" fill="#0e131b"/>
-<text x="892.0" y="168.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#e6a743" text-anchor="start">first household upsert (5);</text>
-<rect x="889.0" y="195.0" width="151.5" height="16.0" rx="3" fill="#0e131b"/>
-<text x="892.0" y="206.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#9aa6bc" text-anchor="start">needs tariff D−1 in landing</text>
-<path d="M1110.0,150.0 L1110.0,122.0 L1180.0,122.0 L1180.0,150.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
-<path d="M1110.0,150.0 L1110.0,122.0 L1180.0,122.0 L1180.0,150.0" fill="none" stroke="#e6a743" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-provisional-f)"/>
-<rect x="1083.0" y="103.0" width="146.1" height="16.0" rx="3" fill="#0e131b"/>
-<text x="1086.0" y="114.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#e6a743" text-anchor="start">re-upserted every 10 s (5)</text>
-<path d="M1145.0,240.0 L1145.0,372.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
-<path d="M1145.0,240.0 L1145.0,372.0" fill="none" stroke="#72a2ec" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
-<rect x="1151.0" y="280.5" width="68.0" height="16.5" rx="3" fill="#0e131b"/>
-<text x="1154.0" y="292.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#72a2ec" text-anchor="start">success row</text>
-<rect x="1151.0" y="298.5" width="68.0" height="16.5" rx="3" fill="#0e131b"/>
-<text x="1154.0" y="310.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#72a2ec" text-anchor="start">exists (14)</text>
-<path d="M799.0,216.0 L799.0,417.0 L1050.0,417.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
-<path d="M799.0,216.0 L799.0,417.0 L1050.0,417.0" fill="none" stroke="#72a2ec" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
-<rect x="807.0" y="397.0" width="167.7" height="16.0" rx="3" fill="#0e131b"/>
-<text x="810.0" y="408.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#72a2ec" text-anchor="start">success row, no speed row (14)</text>
-<path d="M1110.0,462.0 L1110.0,490.0 L1180.0,490.0 L1180.0,462.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
-<path d="M1110.0,462.0 L1110.0,490.0 L1180.0,490.0 L1180.0,462.0" fill="none" stroke="#72a2ec" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
-<rect x="1037.0" y="497.0" width="205.4" height="16.0" rx="3" fill="#0e131b"/>
-<text x="1040.0" y="508.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#72a2ec" text-anchor="start">restatement commits: new figures (14)</text>
-<text x="676.0" y="536.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#9aa6bc" text-anchor="start">No transition leaves final: a success row is only demoted inside the transaction</text>
-<text x="676.0" y="552.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#9aa6bc" text-anchor="start">that commits its replacement, so there is no instant with no success row.</text>
-<path d="M580.0,196.0 L640.0,196.0 L640.0,440.0 L1050.0,440.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
-<path d="M580.0,196.0 L640.0,196.0 L640.0,440.0 L1050.0,440.0" fill="none" stroke="#72a2ec" stroke-width="1.6" stroke-linejoin="round" stroke-dasharray="1 4" stroke-linecap="round"/>
-<rect x="645.0" y="459.0" width="331.4" height="16.0" rx="3" fill="#0e131b"/>
-<text x="648.0" y="470.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="400" fill="#72a2ec" text-anchor="start">is_day_finalised(D) = SELECT 1 … status = 'success'</text>
-<rect x="24.0" y="593.0" width="24.0" height="14.0" rx="3" fill="#332c22" stroke="#e6a743" stroke-width="1.3"/>
-<text x="55.0" y="604.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">speed · provisional</text>
-<rect x="193.0" y="593.0" width="24.0" height="14.0" rx="3" fill="#1f2b3f" stroke="#72a2ec" stroke-width="1.3"/>
-<text x="224.0" y="604.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">batch · final</text>
-<rect x="324.7" y="593.0" width="24.0" height="14.0" rx="3" fill="#35242b" stroke="#f17878" stroke-width="1.3"/>
-<text x="355.7" y="604.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">rejected / failed</text>
-<rect x="481.3" y="593.0" width="24.0" height="14.0" rx="3" fill="#193135" stroke="#4cc4b2" stroke-width="1.3"/>
-<text x="512.3" y="604.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">orchestration, monitoring</text>
-<rect x="687.5" y="593.0" width="24.0" height="14.0" rx="3" fill="#172030" stroke="#38465e" stroke-width="1.3"/>
-<text x="718.5" y="604.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">infrastructure</text>
+<rect width="1200" height="440" fill="#0e131b"/>
+<text x="24.0" y="36.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="650" fill="#e3e9f2" text-anchor="start">Bill lifecycle</text>
+<rect x="24.0" y="64.0" width="540.0" height="330.0" rx="12" fill="none" stroke="#38465e" stroke-width="1.2"/>
+<text x="36.0" y="82.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="650" fill="#9aa6bc" text-anchor="start">Billing run</text>
+<circle cx="58" cy="150" r="7" fill="#e3e9f2"/>
+<rect x="96.0" y="126.0" width="150.0" height="48.0" rx="24" fill="#193336" stroke="#4cc4b2" stroke-width="1.8"/>
+<text x="171.0" y="155.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#e3e9f2" text-anchor="middle">Running</text>
+<rect x="370.0" y="126.0" width="160.0" height="48.0" rx="24" fill="#202d41" stroke="#72a2ec" stroke-width="1.8"/>
+<text x="450.0" y="155.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#e3e9f2" text-anchor="middle">Succeeded</text>
+<rect x="96.0" y="276.0" width="150.0" height="48.0" rx="24" fill="#37252c" stroke="#f17878" stroke-width="1.8"/>
+<text x="171.0" y="305.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#e3e9f2" text-anchor="middle">Failed</text>
+<rect x="370.0" y="276.0" width="160.0" height="48.0" rx="24" fill="#172030" stroke="#38465e" stroke-width="1.8"/>
+<text x="450.0" y="305.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#e3e9f2" text-anchor="middle">Superseded</text>
+<path d="M65.0,150.0 L96.0,150.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M65.0,150.0 L96.0,150.0" fill="none" stroke="#4cc4b2" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-control-f)"/>
+<path d="M246.0,150.0 L370.0,150.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M246.0,150.0 L370.0,150.0" fill="none" stroke="#72a2ec" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<rect x="287.8" y="132.5" width="40.5" height="15.5" rx="3" fill="#0e131b"/>
+<text x="308.0" y="143.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#72a2ec" text-anchor="middle">commit</text>
+<path d="M171.0,174.0 L171.0,276.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M171.0,174.0 L171.0,276.0" fill="none" stroke="#f17878" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-failure-f)"/>
+<rect x="177.0" y="219.5" width="34.8" height="15.5" rx="3" fill="#0e131b"/>
+<text x="180.0" y="230.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#f17878" text-anchor="start">error</text>
+<path d="M450.0,174.0 L450.0,276.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M450.0,174.0 L450.0,276.0" fill="none" stroke="#9aa6bc" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-muted-f)"/>
+<rect x="456.0" y="219.5" width="52.0" height="15.5" rx="3" fill="#0e131b"/>
+<text x="459.0" y="230.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#9aa6bc" text-anchor="start">restated</text>
+<path d="M171.0,324.0 L171.0,352.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M171.0,324.0 L171.0,352.0" fill="none" stroke="#9aa6bc" stroke-width="1.6" stroke-linejoin="round"/>
+<circle cx="171" cy="361" r="9" fill="none" stroke="#e3e9f2" stroke-width="1.6"/><circle cx="171" cy="361" r="5" fill="#e3e9f2"/>
+<path d="M450.0,324.0 L450.0,352.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M450.0,324.0 L450.0,352.0" fill="none" stroke="#9aa6bc" stroke-width="1.6" stroke-linejoin="round"/>
+<circle cx="450" cy="361" r="9" fill="none" stroke="#e3e9f2" stroke-width="1.6"/><circle cx="450" cy="361" r="5" fill="#e3e9f2"/>
+<rect x="620.0" y="64.0" width="556.0" height="330.0" rx="12" fill="none" stroke="#38465e" stroke-width="1.2"/>
+<text x="632.0" y="82.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="650" fill="#9aa6bc" text-anchor="start">Bill served for day D</text>
+<circle cx="652" cy="150" r="7" fill="#e3e9f2"/>
+<rect x="690.0" y="126.0" width="150.0" height="48.0" rx="24" fill="#172030" stroke="#38465e" stroke-width="1.8"/>
+<text x="765.0" y="155.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#e3e9f2" text-anchor="middle">Not found</text>
+<rect x="970.0" y="126.0" width="170.0" height="48.0" rx="24" fill="#352e22" stroke="#e6a743" stroke-width="1.8"/>
+<text x="1055.0" y="155.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#e3e9f2" text-anchor="middle">Provisional</text>
+<rect x="970.0" y="276.0" width="170.0" height="48.0" rx="24" fill="#202d41" stroke="#72a2ec" stroke-width="1.8"/>
+<text x="1055.0" y="305.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="650" fill="#e3e9f2" text-anchor="middle">Final</text>
+<path d="M659.0,150.0 L690.0,150.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M659.0,150.0 L690.0,150.0" fill="none" stroke="#9aa6bc" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-muted-f)"/>
+<path d="M840.0,150.0 L970.0,150.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M840.0,150.0 L970.0,150.0" fill="none" stroke="#e6a743" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-provisional-f)"/>
+<rect x="861.8" y="132.5" width="86.5" height="15.5" rx="3" fill="#0e131b"/>
+<text x="905.0" y="143.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#e6a743" text-anchor="middle">first estimate</text>
+<path d="M1055.0,174.0 L1055.0,276.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M1055.0,174.0 L1055.0,276.0" fill="none" stroke="#72a2ec" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<rect x="1061.0" y="219.5" width="63.5" height="15.5" rx="3" fill="#0e131b"/>
+<text x="1064.0" y="230.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#72a2ec" text-anchor="start">day billed</text>
+<path d="M765.0,174.0 L765.0,300.0 L970.0,300.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M765.0,174.0 L765.0,300.0 L970.0,300.0" fill="none" stroke="#72a2ec" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<rect x="836.2" y="282.5" width="63.5" height="15.5" rx="3" fill="#0e131b"/>
+<text x="868.0" y="293.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#72a2ec" text-anchor="middle">day billed</text>
+<path d="M1030.0,126.0 L1030.0,100.0 L1090.0,100.0 L1090.0,126.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M1030.0,126.0 L1030.0,100.0 L1090.0,100.0 L1090.0,126.0" fill="none" stroke="#e6a743" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-provisional-f)"/>
+<rect x="1039.8" y="82.5" width="40.5" height="15.5" rx="3" fill="#0e131b"/>
+<text x="1060.0" y="93.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#e6a743" text-anchor="middle">update</text>
+<path d="M1140.0,290.0 L1162.0,290.0 L1162.0,312.0 L1140.0,312.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M1140.0,290.0 L1162.0,290.0 L1162.0,312.0 L1140.0,312.0" fill="none" stroke="#72a2ec" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<rect x="1076.9" y="332.5" width="46.2" height="15.5" rx="3" fill="#0e131b"/>
+<text x="1100.0" y="343.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#72a2ec" text-anchor="middle">restate</text>
+<path d="M530.0,150.0 L590.0,150.0 L590.0,372.0 L1055.0,372.0 L1055.0,324.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M530.0,150.0 L590.0,150.0 L590.0,372.0 L1055.0,372.0 L1055.0,324.0" fill="none" stroke="#72a2ec" stroke-width="1.6" stroke-linejoin="round" stroke-dasharray="1 4" stroke-linecap="round" marker-end="url(#ah-final-f)"/>
+<rect x="798.9" y="355.5" width="46.2" height="15.5" rx="3" fill="#0e131b"/>
+<text x="822.0" y="366.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#72a2ec" text-anchor="middle">selects</text>
+<rect x="24.0" y="409.0" width="22.0" height="14.0" rx="3" fill="#352e22" stroke="#e6a743" stroke-width="1.2"/>
+<text x="53.0" y="420.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">speed · provisional</text>
+<rect x="191.0" y="409.0" width="22.0" height="14.0" rx="3" fill="#202d41" stroke="#72a2ec" stroke-width="1.2"/>
+<text x="220.0" y="420.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">batch · final</text>
+<rect x="320.7" y="409.0" width="22.0" height="14.0" rx="3" fill="#37252c" stroke="#f17878" stroke-width="1.2"/>
+<text x="349.7" y="420.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">rejected / failed</text>
+<rect x="475.3" y="409.0" width="22.0" height="14.0" rx="3" fill="#193336" stroke="#4cc4b2" stroke-width="1.2"/>
+<text x="504.3" y="420.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">orchestration · monitoring</text>
+<rect x="685.8" y="409.0" width="22.0" height="14.0" rx="3" fill="#172030" stroke="#38465e" stroke-width="1.2"/>
+<text x="714.8" y="420.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">infrastructure</text>
 </svg>
