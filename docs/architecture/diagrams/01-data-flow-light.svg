@@ -1,0 +1,212 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="940" viewBox="0 0 1280 940" role="img" aria-labelledby="title desc">
+<title id="title">Voltstream data flow: where a meter reading goes</title>
+<desc id="desc">Data flow of the Voltstream Lambda pipeline. meter-producer publishes readings to the Kafka topic meter.readings (3 partitions, keyed by household_id). Two consumers read it independently: raw-archiver appends every record unchanged to Parquet in MinIO bucket voltstream-raw, and speed-layer runs three Spark Structured Streaming queries that upsert zone_metrics_rt and household_running_rt in Postgres and send rejected records to rejected_records and the meter.readings.dlq topic, which nothing consumes. reference-dropper writes tariff_D.csv to voltstream-landing when day D closes; the speed layer prices day D with the previous day's tariff, and the file's arrival triggers the Airflow daily_billing DAG, whose containers rescan the day from voltstream-raw and write pipeline_runs, household_bill_daily, household_bill_history, zone_metrics_daily and reconciliation_daily, plus an archived tariff and report in voltstream-archive. The weather file is written but never read. voltstream-api reads Postgres and merges: the batch bill if the day is finalised, otherwise the speed estimate; the dashboard polls it every 5 seconds.</desc>
+<defs><marker id="ah-control-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0d7366"/></marker><marker id="ah-failure-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bb2f2f"/></marker><marker id="ah-final-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2a5ea8"/></marker><marker id="ah-muted-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4e5a71"/></marker><marker id="ah-provisional-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3620a"/></marker><marker id="ah-simulated-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7150b3"/></marker></defs>
+<rect width="1280" height="940" fill="#f6f8fb"/>
+<text x="24.0" y="38.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="650" fill="#172033" text-anchor="start">1 · Where a meter reading goes</text>
+<text x="24.0" y="61.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#4e5a71" text-anchor="start">Every arrow is a read or a write in the code. Colour says which layer owns the data; F1–F6 are the injected faults in diagram 4.</text>
+<rect x="20.0" y="150.0" width="190.0" height="136.0" rx="8" fill="#e7e6f3" stroke="#7150b3" stroke-width="1.3"/>
+<text x="34.0" y="174.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="650" fill="#172033" text-anchor="start">meter-producer</text>
+<text x="34.0" y="196.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#4e5a71" text-anchor="start">50 households · 5 zones</text>
+<text x="34.0" y="215.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#4e5a71" text-anchor="start">one tick every 2 s real</text>
+<text x="34.0" y="234.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#4e5a71" text-anchor="start">= 9.6 simulated minutes</text>
+<text x="34.0" y="262.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#7150b3" text-anchor="start">FaultInjector: F1–F6</text>
+<rect x="20.0" y="380.0" width="190.0" height="92.0" rx="8" fill="#e7e6f3" stroke="#7150b3" stroke-width="1.3"/>
+<text x="34.0" y="404.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="650" fill="#172033" text-anchor="start">reference-dropper</text>
+<text x="34.0" y="426.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#4e5a71" text-anchor="start">tariff_D when D closes</text>
+<text x="34.0" y="445.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#4e5a71" text-anchor="start">weather_D when D starts</text>
+<rect x="240.0" y="100.0" width="240.0" height="234.0" rx="10" fill="none" stroke="#b8c2d3" stroke-width="1.2"/>
+<text x="252.0" y="120.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="12" font-weight="600" fill="#4e5a71" text-anchor="start">kafka:9092</text>
+<rect x="252.0" y="130.0" width="216.0" height="58.0" rx="8" fill="#f0e2e5" stroke="#bb2f2f" stroke-width="1.3"/>
+<text x="264.0" y="152.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="600" fill="#172033" text-anchor="start">meter.readings.dlq</text>
+<text x="264.0" y="172.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">3 partitions · no consumer</text>
+<rect x="252.0" y="200.0" width="216.0" height="122.0" rx="8" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1.3"/>
+<text x="264.0" y="222.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="600" fill="#172033" text-anchor="start">meter.readings</text>
+<text x="264.0" y="240.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">keyed by household_id · 7 days</text>
+<text x="264.0" y="267.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="600" fill="#4e5a71" text-anchor="start">P0</text>
+<rect x="284.0" y="254.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="298.5" y="266.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4182</text>
+<rect x="315.0" y="254.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="329.5" y="266.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4183</text>
+<rect x="346.0" y="254.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="360.5" y="266.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4184</text>
+<rect x="377.0" y="254.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="391.5" y="266.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4185</text>
+<rect x="408.0" y="254.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="422.5" y="266.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4186</text>
+<text x="441.0" y="267.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#4e5a71" text-anchor="start">→</text>
+<text x="264.0" y="288.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="600" fill="#4e5a71" text-anchor="start">P1</text>
+<rect x="284.0" y="275.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="298.5" y="287.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4227</text>
+<rect x="315.0" y="275.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="329.5" y="287.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4228</text>
+<rect x="346.0" y="275.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="360.5" y="287.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4229</text>
+<rect x="377.0" y="275.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="391.5" y="287.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4230</text>
+<rect x="408.0" y="275.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="422.5" y="287.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4231</text>
+<text x="441.0" y="288.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#4e5a71" text-anchor="start">→</text>
+<text x="264.0" y="309.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="600" fill="#4e5a71" text-anchor="start">P2</text>
+<rect x="284.0" y="296.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="298.5" y="308.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4163</text>
+<rect x="315.0" y="296.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="329.5" y="308.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4164</text>
+<rect x="346.0" y="296.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="360.5" y="308.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4165</text>
+<rect x="377.0" y="296.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="391.5" y="308.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4166</text>
+<rect x="408.0" y="296.0" width="29.0" height="17.0" rx="2" fill="#f6f8fb" stroke="#b8c2d3" stroke-width="1"/>
+<text x="422.5" y="308.5" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="9" font-weight="middle" fill="#4e5a71" text-anchor="start">4167</text>
+<text x="441.0" y="309.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="400" fill="#4e5a71" text-anchor="start">→</text>
+<rect x="240.0" y="372.0" width="240.0" height="330.0" rx="10" fill="none" stroke="#b8c2d3" stroke-width="1.2"/>
+<text x="252.0" y="392.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="12" font-weight="600" fill="#4e5a71" text-anchor="start">minio:9000 (S3)</text>
+<rect x="252.0" y="402.0" width="216.0" height="94.0" rx="8" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1.3"/>
+<text x="264.0" y="424.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="600" fill="#172033" text-anchor="start">voltstream-landing</text>
+<text x="264.0" y="444.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11.5" font-weight="400" fill="#172033" text-anchor="start">tariff/tariff_D.csv</text>
+<rect x="260.0" y="456.0" width="200.0" height="30.0" rx="5" fill="none" stroke="#8a94a8" stroke-width="1.3" stroke-dasharray="5 4"/>
+<text x="270.0" y="475.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="400" fill="#8a94a8" text-anchor="start">weather_D.csv · never read</text>
+<rect x="252.0" y="508.0" width="216.0" height="68.0" rx="8" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1.3"/>
+<text x="264.0" y="530.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="600" fill="#172033" text-anchor="start">voltstream-raw</text>
+<text x="264.0" y="549.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">meter_readings/sim_date=D/</text>
+<text x="264.0" y="566.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">hour=H/*.parquet</text>
+<rect x="252.0" y="590.0" width="216.0" height="98.0" rx="8" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1.3"/>
+<text x="264.0" y="612.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="13" font-weight="600" fill="#172033" text-anchor="start">voltstream-archive</text>
+<text x="264.0" y="632.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">tariff/sim_date=D/run_id=R/</text>
+<text x="264.0" y="650.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">  (tariff billed with, Parquet)</text>
+<text x="264.0" y="672.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">reports/report_D.md</text>
+<rect x="512.0" y="100.0" width="236.0" height="232.0" rx="8" fill="#ede8e0" stroke="#a3620a" stroke-width="1.3"/>
+<text x="526.0" y="124.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="650" fill="#172033" text-anchor="start">speed-layer</text>
+<text x="526.0" y="143.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">Spark Structured Streaming</text>
+<text x="526.0" y="159.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">3 queries · trigger 10 s real</text>
+<rect x="524.0" y="170.0" width="212.0" height="46.0" rx="6" fill="#f6f8fb" stroke="#a3620a" stroke-width="1"/>
+<text x="534.0" y="189.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="12" font-weight="600" fill="#172033" text-anchor="start">speed_layer_validation</text>
+<text x="534.0" y="206.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start">split_valid_invalid() → rejects</text>
+<rect x="524.0" y="222.0" width="212.0" height="46.0" rx="6" fill="#f6f8fb" stroke="#a3620a" stroke-width="1"/>
+<text x="534.0" y="241.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="12" font-weight="600" fill="#172033" text-anchor="start">speed_layer_zone</text>
+<text x="534.0" y="258.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start">15 min windows, 30 min watermark</text>
+<rect x="524.0" y="274.0" width="212.0" height="46.0" rx="6" fill="#f6f8fb" stroke="#a3620a" stroke-width="1"/>
+<text x="534.0" y="293.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="12" font-weight="600" fill="#172033" text-anchor="start">speed_layer_household</text>
+<text x="534.0" y="310.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start">per day · priced with tariff D−1</text>
+<rect x="512.0" y="508.0" width="236.0" height="68.0" rx="8" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1.3"/>
+<text x="526.0" y="530.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="650" fill="#172033" text-anchor="start">raw-archiver</text>
+<text x="526.0" y="549.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">no validation, dedup or filtering</text>
+<text x="526.0" y="566.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">appends Parquet by sim_date/hour</text>
+<rect x="512.0" y="606.0" width="236.0" height="222.0" rx="8" fill="#dce9eb" stroke="#0d7366" stroke-width="1.3"/>
+<text x="526.0" y="630.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="650" fill="#172033" text-anchor="start">airflow</text>
+<text x="526.0" y="649.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">tariff_watcher: every 1 min</text>
+<text x="526.0" y="664.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">→ daily_billing, one run per day</text>
+<rect x="524.0" y="674.0" width="212.0" height="32.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="534.0" y="695.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11.5" font-weight="600" fill="#172033" text-anchor="start">daily_billing.py</text>
+<text x="726.0" y="695.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="end">Spark</text>
+<rect x="524.0" y="712.0" width="212.0" height="32.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="534.0" y="733.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11.5" font-weight="600" fill="#172033" text-anchor="start">daily_zone_rollup.py</text>
+<text x="726.0" y="733.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="end">Spark</text>
+<rect x="524.0" y="750.0" width="212.0" height="32.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="534.0" y="771.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11.5" font-weight="600" fill="#172033" text-anchor="start">voltstream-reconcile</text>
+<text x="726.0" y="771.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="end">app</text>
+<rect x="524.0" y="788.0" width="212.0" height="32.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="534.0" y="809.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11.5" font-weight="600" fill="#172033" text-anchor="start">generate_report.py</text>
+<text x="726.0" y="809.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="end">app</text>
+<rect x="780.0" y="100.0" width="230.0" height="728.0" rx="10" fill="none" stroke="#b8c2d3" stroke-width="1.2"/>
+<text x="792.0" y="120.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="12" font-weight="600" fill="#4e5a71" text-anchor="start">postgres:5432 / voltstream</text>
+<rect x="792.0" y="178.0" width="206.0" height="30.0" rx="5" fill="#f0e2e5" stroke="#bb2f2f" stroke-width="1"/>
+<text x="802.0" y="197.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">rejected_records</text>
+<text x="990.0" y="197.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#4e5a71" text-anchor="end">speed + billing</text>
+<rect x="792.0" y="230.0" width="206.0" height="30.0" rx="5" fill="#ede8e0" stroke="#a3620a" stroke-width="1"/>
+<text x="802.0" y="249.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">zone_metrics_rt</text>
+<text x="990.0" y="249.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#4e5a71" text-anchor="end">speed</text>
+<rect x="792.0" y="282.0" width="206.0" height="30.0" rx="5" fill="#ede8e0" stroke="#a3620a" stroke-width="1"/>
+<text x="802.0" y="301.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">household_running_rt</text>
+<text x="990.0" y="301.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#4e5a71" text-anchor="end">speed</text>
+<rect x="792.0" y="420.0" width="206.0" height="30.0" rx="5" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1"/>
+<text x="802.0" y="439.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">households</text>
+<text x="990.0" y="439.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#4e5a71" text-anchor="end">seed SQL</text>
+<rect x="792.0" y="640.0" width="206.0" height="30.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="802.0" y="659.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">pipeline_runs</text>
+<text x="990.0" y="659.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#4e5a71" text-anchor="end">billing, rollup</text>
+<rect x="792.0" y="674.0" width="206.0" height="30.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="802.0" y="693.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">household_bill_daily</text>
+<text x="990.0" y="693.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#4e5a71" text-anchor="end">billing</text>
+<rect x="792.0" y="708.0" width="206.0" height="30.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="802.0" y="727.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">household_bill_history</text>
+<text x="990.0" y="727.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#4e5a71" text-anchor="end">billing</text>
+<rect x="792.0" y="742.0" width="206.0" height="30.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="802.0" y="761.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">zone_metrics_daily</text>
+<text x="990.0" y="761.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#4e5a71" text-anchor="end">rollup</text>
+<rect x="792.0" y="776.0" width="206.0" height="30.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="802.0" y="795.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">reconciliation_daily</text>
+<text x="990.0" y="795.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#4e5a71" text-anchor="end">reconcile</text>
+<text x="792.0" y="628.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#4e5a71" text-anchor="start">daily_billing: one transaction</text>
+<rect x="1042.0" y="330.0" width="218.0" height="210.0" rx="8" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1.3"/>
+<text x="1056.0" y="354.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="650" fill="#172033" text-anchor="start">voltstream-api</text>
+<text x="1056.0" y="372.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">FastAPI :8000</text>
+<text x="1056.0" y="400.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">GET …/households/{id}/bill</text>
+<text x="1056.0" y="422.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">merge, per request:</text>
+<text x="1056.0" y="444.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#172033" text-anchor="start">pipeline_runs success for D?</text>
+<text x="1066.0" y="466.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#2a5ea8" text-anchor="start">yes → household_bill_daily</text>
+<text x="1066.0" y="486.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#a3620a" text-anchor="start">no  → household_running_rt</text>
+<text x="1066.0" y="504.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">(provisional=true)</text>
+<text x="1056.0" y="526.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">neither → 404</text>
+<rect x="1042.0" y="600.0" width="218.0" height="92.0" rx="8" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1.3"/>
+<text x="1056.0" y="624.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="14" font-weight="650" fill="#172033" text-anchor="start">dashboard/</text>
+<text x="1056.0" y="644.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">static files served by the API</text>
+<text x="1056.0" y="663.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">polls the API every 5 s</text>
+<path d="M210.0,232.0 L252.0,232.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M210.0,232.0 L252.0,232.0" fill="none" stroke="#7150b3" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-simulated-f)"/>
+<rect x="211.0" y="211.5" width="42.0" height="15.5" rx="3" fill="#f6f8fb"/>
+<text x="214.0" y="222.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start">produce</text>
+<path d="M210.0,416.0 L252.0,416.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M210.0,416.0 L252.0,416.0" fill="none" stroke="#7150b3" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-simulated-f)"/>
+<path d="M468.0,256.0 L512.0,256.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M468.0,256.0 L512.0,256.0" fill="none" stroke="#a3620a" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-provisional-f)"/>
+<path d="M468.0,306.0 L490.0,306.0 L490.0,530.0 L512.0,530.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M468.0,306.0 L490.0,306.0 L490.0,530.0 L512.0,530.0" fill="none" stroke="#2a5ea8" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<path d="M512.0,176.0 L468.0,176.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M512.0,176.0 L468.0,176.0" fill="none" stroke="#bb2f2f" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-failure-f)"/>
+<path d="M512.0,542.0 L468.0,542.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M512.0,542.0 L468.0,542.0" fill="none" stroke="#2a5ea8" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<path d="M468.0,444.0 L500.0,444.0 L500.0,300.0 L524.0,300.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M468.0,444.0 L500.0,444.0 L500.0,300.0 L524.0,300.0" fill="none" stroke="#a3620a" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-provisional-f)"/>
+<path d="M252.0,444.0 L226.0,444.0 L226.0,850.0 L600.0,850.0 L600.0,828.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M252.0,444.0 L226.0,444.0 L226.0,850.0 L600.0,850.0 L600.0,828.0" fill="none" stroke="#0d7366" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-control-f)"/>
+<rect x="233.0" y="857.0" width="474.9" height="16.0" rx="3" fill="#f6f8fb"/>
+<text x="236.0" y="868.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="600" fill="#0d7366" text-anchor="start">tariff_D.csv arrives = day D is closed → triggers daily_billing, which prices D with it</text>
+<path d="M468.0,562.0 L498.0,562.0 L498.0,620.0 L512.0,620.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M468.0,562.0 L498.0,562.0 L498.0,620.0 L512.0,620.0" fill="none" stroke="#2a5ea8" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<path d="M524.0,690.0 L476.0,690.0 L476.0,640.0 L468.0,640.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M524.0,690.0 L476.0,690.0 L476.0,640.0 L468.0,640.0" fill="none" stroke="#2a5ea8" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<path d="M524.0,804.0 L482.0,804.0 L482.0,676.0 L468.0,676.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M524.0,804.0 L482.0,804.0 L482.0,676.0 L468.0,676.0" fill="none" stroke="#2a5ea8" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<path d="M736.0,193.0 L792.0,193.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M736.0,193.0 L792.0,193.0" fill="none" stroke="#bb2f2f" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-failure-f)"/>
+<path d="M736.0,245.0 L792.0,245.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M736.0,245.0 L792.0,245.0" fill="none" stroke="#a3620a" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-provisional-f)"/>
+<path d="M736.0,297.0 L792.0,297.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M736.0,297.0 L792.0,297.0" fill="none" stroke="#a3620a" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-provisional-f)"/>
+<path d="M748.0,718.0 L784.0,718.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M748.0,718.0 L784.0,718.0" fill="none" stroke="#2a5ea8" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<rect x="784.0" y="640.0" width="3.0" height="166.0" rx="1" fill="#2a5ea8"/>
+<path d="M1010.0,436.0 L1042.0,436.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M1010.0,436.0 L1042.0,436.0" fill="none" stroke="#4e5a71" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-muted-f)"/>
+<rect x="1009.0" y="418.0" width="20.7" height="15.0" rx="3" fill="#f6f8fb"/>
+<text x="1012.0" y="428.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#4e5a71" text-anchor="start">SQL</text>
+<path d="M1151.0,600.0 L1151.0,540.0" fill="none" stroke="#f6f8fb" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M1151.0,600.0 L1151.0,540.0" fill="none" stroke="#4e5a71" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-muted-f)"/>
+<rect x="1154.0" y="566.0" width="20.7" height="15.0" rx="3" fill="#f6f8fb"/>
+<text x="1157.0" y="576.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10" font-weight="400" fill="#4e5a71" text-anchor="start">GET</text>
+<rect x="24.0" y="895.0" width="24.0" height="14.0" rx="3" fill="#e7e6f3" stroke="#7150b3" stroke-width="1.3"/>
+<text x="55.0" y="906.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">simulated source</text>
+<rect x="174.4" y="895.0" width="24.0" height="14.0" rx="3" fill="#ede8e0" stroke="#a3620a" stroke-width="1.3"/>
+<text x="205.4" y="906.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">speed · provisional</text>
+<rect x="343.4" y="895.0" width="24.0" height="14.0" rx="3" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1.3"/>
+<text x="374.4" y="906.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">batch · final</text>
+<rect x="475.1" y="895.0" width="24.0" height="14.0" rx="3" fill="#f0e2e5" stroke="#bb2f2f" stroke-width="1.3"/>
+<text x="506.1" y="906.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">rejected / failed</text>
+<rect x="631.7" y="895.0" width="24.0" height="14.0" rx="3" fill="#dce9eb" stroke="#0d7366" stroke-width="1.3"/>
+<text x="662.7" y="906.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">orchestration, monitoring</text>
+<rect x="837.9" y="895.0" width="24.0" height="14.0" rx="3" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1.3"/>
+<text x="868.9" y="906.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">infrastructure</text>
+<rect x="975.8" y="895.0" width="24.0" height="14.0" rx="3" fill="none" stroke="#8a94a8" stroke-width="1.3" stroke-dasharray="5 4"/>
+<text x="1006.8" y="906.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">never read / end of path</text>
+</svg>

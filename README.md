@@ -45,7 +45,10 @@ tariff file arrives once per simulated day. Two consumers need opposite things:
 A Lambda architecture serves both from one Kafka stream:
 
 <p align="center">
-  <img src="images/architecture/lambda-architecture-report.png" alt="Voltstream Lambda architecture" width="900">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/01-data-flow-dark.svg">
+    <img src="docs/architecture/diagrams/01-data-flow-light.svg" alt="meter-producer publishes readings to the Kafka topic meter.readings, which raw-archiver copies unchanged into Parquet in MinIO and speed-layer aggregates into provisional Postgres tables, rejecting bad records to rejected_records and a DLQ topic nothing consumes. When a day closes, reference-dropper's tariff file triggers the Airflow daily_billing DAG, which rescans the day from Parquet and writes the final bill tables. The API serves the batch bill if the day is finalised, otherwise the speed estimate.">
+  </picture>
 </p>
 
 - The **speed layer** (Spark Structured Streaming) answers in seconds. It is deliberately
@@ -62,31 +65,46 @@ test proves the pure-Python and Spark versions give identical bills.
 **Simulated time:** one simulated day = **5 real minutes** (288× faster), starting at
 2026-01-01 00:00 when the stack starts.
 
-### Data flow, top to bottom
+### One simulated day
 
-The same pipeline drawn as a vertical flow, from the two sources down to the dashboard and
-daily report. (The speed layer's watermark is 30 *simulated* minutes, about 6 real seconds.)
+The speed path runs continuously; at simulated midnight the batch path picks up the day's
+tariff, bills the closed day, and the merge switches it from provisional to final. The
+numbered steps are referred to by the diagrams below.
 
 <p align="center">
-  <img src="images/architecture/lambda-architecture.png" alt="Voltstream data flow" width="560">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/02-day-sequence-dark.svg">
+    <img src="docs/architecture/diagrams/02-day-sequence-light.svg" alt="Sequence of one simulated day lasting 300 real seconds: readings flow every 2 seconds from meter-producer through Kafka to raw-archiver and speed-layer, and a bill request gets the provisional speed row. At simulated midnight reference-dropper writes tariff_D.csv, Airflow's tariff_watcher triggers daily_billing within a minute, which waits 90 seconds for late readings, rescans the day and in one transaction replaces the bills and marks pipeline_runs success, or marks it failed and retries. From that commit on, the API serves the batch row as final.">
+  </picture>
 </p>
 
 ### The merge function
 
-Every bill request goes through one decision: has the batch layer finished this day?
+Every bill request goes through one decision: does `pipeline_runs` hold a `success` row for
+this day? The ledger's states decide what the API serves, and why a final bill never reverts.
 
 <p align="center">
-  <img src="images/architecture/merge-decision.png" alt="Merge decision" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/03-bill-states-dark.svg">
+    <img src="docs/architecture/diagrams/03-bill-states-light.svg" alt="Two state machines. A pipeline_runs row goes from running to success when finalise commits or to failed on an exception, and success becomes superseded only inside the transaction that commits a restatement. The bill for a household and day goes from 404 to provisional, served from household_running_rt priced with the previous day's tariff, to final, served from household_bill_daily, once a success row exists, and never goes back.">
+  </picture>
 </p>
 
-### One simulated day
+### Bad, repeated and late readings
 
-The speed path runs continuously; at simulated midnight the batch path picks up the day's
-tariff, bills the closed day, and the merge switches it from provisional to final.
+The producer injects six kinds of fault on purpose. The raw archiver keeps every record; each
+layer then handles each fault differently, and the two differences that remain are exactly the
+gap that reconciliation explains.
 
 <p align="center">
-  <img src="images/architecture/timeline.png" alt="Timeline of one simulated day" width="820">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/04-fault-handling-dark.svg">
+    <img src="docs/architecture/diagrams/04-fault-handling-light.svg" alt="Matrix of the injected faults against each layer. Null fields, negative kWh and unknown households are rejected by both layers, to rejected_records and, from the speed layer only, the DLQ topic. Out-of-order readings within 30 simulated minutes are counted by both, and duplicates are removed by both on meter_id and event_ts. Dropout backfill older than the watermark is lost by the speed layer but counted by the batch rescan, which is the data effect; pricing with the previous day's tariff is the tariff effect. Speed minus batch equals the sum of the two effects.">
+  </picture>
 </p>
+
+The diagrams are generated: edit `scripts/gen_diagrams.py` and run
+`python scripts/gen_diagrams.py`, which writes both the light and dark versions.
 
 ### Deployment
 
@@ -188,6 +206,15 @@ day be billed first (about 8 minutes after start).
 | One alert             | `faults -Scenario stale` (`rejects`, `sla`, `renewable`, `divergence`) | `make faults s=stale`        | A single alert                                             | 3–17 min |
 | Crash the speed layer | `killtest`                                                             | `make kill-test`             | Losing the speed layer costs freshness, never correctness  | 7–10 min |
 | Restate a day         | `backfill -Date 2026-01-02`                                            | `make backfill d=2026-01-02` | A corrupted tariff fixed by recomputing, with history kept | 6–8 min  |
+
+Where each alert gets its data, and where it ends up:
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/05-alerting-dark.svg">
+    <img src="docs/architecture/diagrams/05-alerting-light.svg" alt="Prometheus scrapes the services' metrics, a Pushgateway fed by exiting batch containers, and sql-exporter, which turns two Postgres queries into gauges. Five rules route through Alertmanager by severity, with MeterDataStale silencing LowRenewableContribution in the same zone, to a webhook on the API that writes one log line per alert; no email, chat or pager receiver is configured.">
+  </picture>
+</p>
 
 | Alert                                | Fault                       | Fires after               |
 | ------------------------------------ | --------------------------- | ------------------------- |
