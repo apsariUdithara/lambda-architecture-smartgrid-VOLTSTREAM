@@ -16,6 +16,10 @@ Colour is semantic and identical in every diagram (ROLES below):
     neutral      shared infrastructure (Kafka, MinIO, Postgres, the API)
     unused       written but never read, or the end of a path (dashed)
 
+Diagram 0 is the plain-language overview; 1-5 are the detail; 6-9 follow the scenario
+scripts (demo.sh, smoke_test.sh kill-speed-layer, backfill.sh, inject_faults.sh) step by
+step, with ✓ for each of the script's own PASS checks.
+
 Step numbers in the day sequence (diagram 2) are reused by the state machines (3) and the
 alerting map (5); fault numbers F1–F6 and T in diagram 4 are reused by 1 and 5.
 
@@ -1039,8 +1043,404 @@ def alerting(s: Svg) -> None:
 
 
 # =========================================================================================
+# 0. The idea in one picture
+# =========================================================================================
+
+OVERVIEW_DESC = (
+    "Overview. Fifty simulated smart meters send a reading every 2 seconds into one Kafka "
+    "stream. A fast path, the speed layer, adds the readings up within seconds but uses "
+    "yesterday's prices and skips readings that arrive very late, so its bill is an estimate. "
+    "Every reading is also kept unchanged in a raw copy. Once a day ends and that day's price "
+    "list arrives, a slow path, the batch layer, re-reads every reading of the day with the "
+    "right prices and produces the exact bill. The API gives one answer: the exact bill if it "
+    "is ready, otherwise the estimate, and the dashboard shows a Provisional or Final badge."
+)
+
+
+def overview(s: Svg) -> None:
+    s.header(
+        "The idea in one picture",
+        "One stream of meter readings, two ways of adding it up, one answer. "
+        "Grey text is the name in the code; diagrams 1–5 have the detail.",
+    )
+
+    def node(x, y, w, h, role, title, lines, code):  # noqa: ANN001
+        s.box(x, y, w, h, role, r=12, sw=1.6)
+        s.text(x + 16, y + 28, title, 16, "ink", 700, maxw=w - 28)
+        for i, (line, color) in enumerate(lines):
+            s.text(x + 16, y + 52 + i * 20, line, 13, color, 600 if color != "ink" else 400,
+                   maxw=w - 28)
+        s.text(x + 16, y + h - 14, code, 11, "faint", mono=True, maxw=w - 28)
+
+    node(24, 190, 190, 128, "simulated", "Smart meters",
+         [("50 homes, 5 zones", "ink"), ("a reading every 2 s", "ink")], "meter-producer")
+    node(24, 400, 190, 128, "simulated", "Price list",
+         [("one file per day,", "ink"), ("sent when the day ends", "ink")], "reference-dropper")
+    node(256, 190, 176, 128, "neutral", "One stream",
+         [("every reading,", "ink"), ("kept in order", "ink")], "Kafka")
+
+    node(480, 96, 316, 148, "provisional", "Fast path · seconds",
+         [("Adds readings up as they arrive.", "ink"),
+          ("Uses yesterday's prices and skips", "ink"),
+          ("very late readings: an estimate.", "ink")], "speed-layer · Spark Streaming")
+    node(480, 268, 316, 92, "final", "Raw copy, never changed",
+         [("every reading, kept for re-reading", "ink")], "raw-archiver → Parquet in MinIO")
+    node(480, 384, 316, 148, "final", "Slow path · once a day",
+         [("When the day is over, re-reads every", "ink"),
+          ("reading with that day's prices.", "ink"),
+          ("The exact bill.", "ink")], "Airflow + Spark · daily_billing")
+
+    node(846, 214, 196, 214, "neutral", "One answer",
+         [("Is the exact bill", "ink"), ("for this day ready?", "ink"),
+          ("yes → Final", "final"), ("no  → Provisional", "provisional")], "voltstream-api")
+    node(1080, 214, 176, 214, "neutral", "Dashboard",
+         [("refreshes every 5 s;", "ink"), ("the bill badge", "ink"),
+          ("flips from", "ink"), ("Provisional to Final", "ink")], "localhost:8000")
+
+    s.edge([(214, 254), (256, 254)], "simulated")
+    s.edge([(432, 230), (456, 230), (456, 170), (480, 170)], "provisional")
+    s.edge([(432, 290), (480, 290)], "final")
+    s.edge([(638, 360), (638, 384)], "final")
+    s.edge([(214, 464), (480, 464)], "simulated")
+    s.label(232, 456, "triggers + prices the slow path", 12, "simulated", weight=600)
+    s.edge([(796, 170), (820, 170), (820, 270), (846, 270)], "provisional")
+    s.label(800, 160, "estimate", 12, "provisional", weight=600)
+    s.edge([(796, 458), (820, 458), (820, 370), (846, 370)], "final")
+    s.label(800, 478, "exact bill", 12, "final", weight=600)
+    s.edge([(1042, 320), (1080, 320)], "neutral")
+
+    s.box(24, 556, s.w - 48, 48, "control", r=8)
+    s.text(40, 586, "Time runs 288× fast: one simulated day = 5 real minutes. Prometheus, "
+           "Alertmanager and Grafana watch every box above (diagram 5).", 13, "ink",
+           maxw=s.w - 80)
+    s.legend(s.h - 22, ["simulated", "provisional", "final", "control", "neutral"])
+
+
+# =========================================================================================
+# Scenario diagrams: what each script in scripts/ does, step by step, and what it checks
+# =========================================================================================
+
+
+def lane_grid(s: Svg, cols, lanes, bottom):  # noqa: ANN001
+    """Column headers (the script's own steps) over swimlanes (the parts that react)."""
+    for x0, x1, num, title, sub in cols:
+        if num:
+            s.badge(x0 + 12, 106, num, "ink")
+        s.text(x0 + (28 if num else 4), 111, title, 13, "ink", 700, maxw=x1 - x0 - 30)
+        s.text(x0 + 4, 130, sub, 11, "muted", maxw=x1 - x0 - 8)
+        s.body.append(
+            f'<line x1="{x0 - 5}" y1="96" x2="{x0 - 5}" y2="{bottom}" stroke="{s.t["line"]}" '
+            f'stroke-width="1" stroke-dasharray="2 4"/>'
+        )
+    for y0, y1, title, sub in lanes:
+        s.rect(20, y0, s.w - 40, y1 - y0, s.t["panel"], None, r=6)
+        s.text(32, y0 + (y1 - y0) / 2 - (2 if sub else -4), title, 12.5, "ink", 650, maxw=180)
+        if sub:
+            s.text(32, y0 + (y1 - y0) / 2 + 14, sub, 10.5, "faint", mono=True, maxw=180)
+
+
+def bar(s: Svg, x0, x1, y0, y1, role, text, sub=None, dash=False):  # noqa: ANN001
+    s.box(x0, y0 + 6, x1 - x0, y1 - y0 - 12, role, r=6, sw=1.2, dash=dash)
+    mid = (y0 + y1) / 2
+    s.text(x0 + 10, mid + (-3 if sub else 4.5), text, 12, "ink", 600, maxw=x1 - x0 - 16)
+    if sub:
+        s.text(x0 + 10, mid + 13, sub, 10.5, "muted", maxw=x1 - x0 - 16)
+
+
+def check(s: Svg, x, y, text):  # noqa: ANN001
+    """One of the script's own PASS assertions."""
+    s.text(x, y, "✓ " + text, 11.5, "ink", 700)
+
+
+DEMO_DESC = (
+    "Scenario diagram for scripts/demo.sh. While day D is open, a bill request for HH-0001 is "
+    "answered by the speed layer: source speed, provisional true, priced with day D−1's "
+    "tariff, and the dashboard badge reads Provisional. At simulated midnight D closes; within "
+    "about two minutes the batch layer waits out the 90-second grace, rescans the day and "
+    "commits the bills. The same request is then answered by the batch layer: source batch, "
+    "provisional false, tariff of day D, badge Final. The bill/delta endpoint then shows the "
+    "estimate, the final bill and the gap split into tariff effect and data effect."
+)
+
+
+def scenario_demo(s: Svg) -> None:
+    s.header(
+        "Scenario · Provisional → final   (voltstream.ps1 demo · make demo)",
+        "scripts/demo.sh asks for the same household's bill for the same day twice: before and "
+        "after the day is billed. Numbers are the script's own steps.",
+    )
+    cols = [
+        (230, 420, "1", "Start the stack", "waits for every health check"),
+        (430, 720, "2", "Day D is open", "until simulated midnight (≤ 5 min real)"),
+        (730, 980, "3", "D closes, is billed", "about 2 min: 90 s grace, then the job"),
+        (990, 1260, "4", "Same request again", "then GET …/bill/delta"),
+    ]
+    lanes = [
+        (146, 198, "Simulated clock", "simclock"),
+        (206, 270, "Speed layer", "speed-layer"),
+        (278, 342, "Batch layer", "airflow daily_billing"),
+        (350, 444, "GET …/HH-0001/bill", "?date=D"),
+        (452, 504, "Dashboard badge", ""),
+    ]
+    lane_grid(s, cols, lanes, 600)
+
+    bar(s, 430, 728, 146, 198, "neutral", "day D")
+    bar(s, 732, 1260, 146, 198, "neutral", "day D+1 (the stack keeps running)")
+    s.body.append(f'<line x1="730" y1="140" x2="730" y2="600" stroke="{s.col("ink")}" '
+                  f'stroke-width="2"/>')
+    s.label(736, 594, "simulated midnight", 11, "ink", weight=700)
+
+    bar(s, 430, 720, 206, 270, "provisional", "re-totals D every 10 s",
+        "priced with tariff D−1 (D's does not exist yet)")
+    bar(s, 732, 1260, 206, 270, "provisional", "now estimating D+1", "D's estimate is kept")
+    s.text(440, 314, "idle: D is not over, so there is nothing exact to compute", 11.5, "muted",
+           italic=True)
+    bar(s, 740, 980, 278, 342, "final", "rescans D from the raw copy",
+        "tariff_D.csv · bills + success row")
+    bar(s, 990, 1260, 278, 342, "final", "reconciles D", "estimate − final, split in two")
+
+    bar(s, 440, 720, 350, 444, "provisional", "source: speed · provisional: true",
+        "tariff_date: D−1 · total grows during the day")
+    check(s, 450, 436, "served by the speed layer while D is open")
+    bar(s, 1000, 1260, 350, 444, "final", "source: batch · provisional: false",
+        "tariff_date: D · the exact bill")
+    check(s, 1010, 436, "merge now serves the batch bill")
+
+    bar(s, 440, 600, 452, 504, "provisional", "Provisional")
+    bar(s, 1000, 1120, 452, 504, "final", "Final")
+
+    s.box(990, 520, 270, 72, "control", r=8)
+    s.text(1004, 542, "GET …/bill/delta?date=D", 11.5, "ink", 700, mono=True)
+    s.text(1004, 562, "estimate − final =", 11.5, "ink")
+    s.text(1004, 580, "tariff_effect + data_effect", 11.5, "ink", 600, mono=True)
+    s.text(232, 540, "Nothing is faked: the script only waits and asks. The flip is the merge "
+           "function", 12, "muted", maxw=740)
+    s.text(232, 558, "(diagram 3) seeing a success row in pipeline_runs for D.", 12, "muted",
+           maxw=740)
+    s.legend(s.h - 22, ["provisional", "final", "control", "neutral"])
+
+
+KILL_DESC = (
+    "Scenario diagram for the kill test, scripts/smoke_test.sh kill-speed-layer. The speed "
+    "layer is killed with SIGKILL for 60 seconds. Meanwhile the raw archiver keeps consuming "
+    "into the raw copy, the live zone view goes stale, and the final bill of an already billed "
+    "day is served unchanged. After a restart the speed layer resumes from its checkpoint and "
+    "catches up until the view is under 30 seconds old with zero consumer lag. When the day of "
+    "the kill closes it is billed in full from the raw copy: 50 bills, and readings at least "
+    "95 percent of the day before. Losing the speed layer costs freshness, never correctness."
+)
+
+
+def scenario_kill(s: Svg) -> None:
+    s.header(
+        "Scenario · Crash the speed layer   (voltstream.ps1 killtest · make kill-test)",
+        "scripts/smoke_test.sh kill-speed-layer, on the running stack. ✓ marks the script's own "
+        "PASS checks.",
+    )
+    cols = [
+        (230, 400, "", "Before", "a day already billed"),
+        (410, 650, "1", "Kill: down 60 s", "docker kill (SIGKILL), no clean stop"),
+        (660, 910, "2", "Restart, catch up", "waits up to 300 s"),
+        (920, 1260, "3", "The kill day closes", "billed like any other day"),
+    ]
+    lanes = [
+        (146, 214, "Speed layer", "speed-layer"),
+        (222, 290, "Raw copy", "raw-archiver → MinIO"),
+        (298, 366, "Live zone view", "zone_metrics_rt"),
+        (374, 442, "Final bill, earlier day", "household_bill_daily"),
+        (450, 518, "Bills for the kill day", "household_bill_daily"),
+    ]
+    lane_grid(s, cols, lanes, 530)
+
+    bar(s, 230, 404, 146, 214, "provisional", "running")
+    bar(s, 410, 654, 146, 214, "failure", "killed", "nothing reads the stream for it")
+    bar(s, 660, 914, 146, 214, "provisional", "re-reads from its checkpoint",
+        "the missed minute first, then live")
+    bar(s, 920, 1260, 146, 214, "provisional", "running")
+
+    bar(s, 230, 1260, 222, 290, "final", "keeps consuming every reading, untouched by the crash",
+        " ")
+    check(s, 420, 270, "kept consuming while speed was down")
+
+    bar(s, 230, 404, 298, 366, "neutral", "seconds old")
+    bar(s, 410, 654, 298, 366, "failure", "stale: data age grows", "the dashboard freezes")
+    bar(s, 660, 914, 298, 366, "neutral", "fresh again", " ")
+    check(s, 670, 346, "age < 30 s, consumer lag 0")
+    bar(s, 920, 1260, 298, 366, "neutral", "seconds old")
+
+    bar(s, 230, 914, 374, 442, "final", "same total, served by the API throughout", " ")
+    check(s, 420, 422, "unchanged during")
+    check(s, 670, 422, "identical before, during, after")
+
+    s.text(240, 490, "not billed yet: the kill day is still open", 11.5, "muted", italic=True)
+    bar(s, 920, 1260, 450, 518, "final", "billed from the raw copy, not the speed view", " ")
+    check(s, 930, 498, "50 bills · readings ≥ 95 % of the day before")
+
+    s.box(20, 540, s.w - 40, 46, "control", r=8)
+    s.text(36, 569, "The point: losing the speed layer costs freshness, never correctness. "
+           "Bills come from the raw copy (diagram 1).", 13, "ink", 600, maxw=s.w - 72)
+    s.legend(s.h - 22, ["provisional", "final", "failure", "control", "neutral"])
+
+
+RESTATE_DESC = (
+    "Scenario diagram for scripts/backfill.sh, restating an already billed day D. The script "
+    "corrupts block_1_rate by 45.00 in every row of tariff_D.csv and runs billing again as "
+    "billing__D__r1: all 50 bills change, the original run becomes superseded and r1 becomes "
+    "success. It then restores the original file and runs billing__D__r2: all 50 wrong bills "
+    "are replaced, r1 becomes superseded and r2 success. household_bill_daily, which the API "
+    "serves, holds only the latest bills, while household_bill_history keeps all three sets. "
+    "The original tariff file is restored on any exit."
+)
+
+
+def scenario_restate(s: Svg) -> None:
+    s.header(
+        "Scenario · Restate a day   (voltstream.ps1 backfill -Date D · make backfill d=D)",
+        "scripts/backfill.sh: a wrong price list is fixed by re-running the day, not by editing "
+        "bills. Each run is a new Airflow run of the same DAG.",
+    )
+    cols = [
+        (230, 450, "", "Before", "D billed once, normally"),
+        (460, 850, "1", "Corrupt the price list, re-run", "the wrong bills, on purpose"),
+        (860, 1260, "2", "Restore it, re-run", "the corrected bills"),
+    ]
+    lanes = [
+        (146, 210, "Price list for D", "landing tariff_D.csv"),
+        (218, 282, "Billing run", "airflow daily_billing"),
+        (290, 410, "Run ledger", "pipeline_runs"),
+        (418, 482, "What the API serves", "household_bill_daily"),
+        (490, 610, "Every run's bills", "household_bill_history"),
+    ]
+    lane_grid(s, cols, lanes, 620)
+
+    bar(s, 230, 454, 146, 210, "neutral", "original")
+    bar(s, 460, 854, 146, 210, "failure", "block_1_rate + 45.00 in every row")
+    bar(s, 860, 1260, 146, 210, "neutral", "original, put back",
+        "also restored on any exit, Ctrl+C included")
+
+    bar(s, 230, 454, 218, 282, "control", "billing__D")
+    bar(s, 460, 854, 218, 282, "control", "billing__D__r1", "waits 90 s grace, rescans D")
+    bar(s, 860, 1260, 218, 282, "control", "billing__D__r2", "waits 90 s grace, rescans D")
+
+    def ledger(x, rows, w=300):  # noqa: ANN001
+        for i, (run, status, role) in enumerate(rows):
+            y = 298 + i * 36
+            s.box(x, y, w, 30, role, r=5, sw=1)
+            s.text(x + 10, y + 20, run, 11, "ink", 600, mono=True)
+            s.text(x + w - 10, y + 20, status, 11, "ink", 700, anchor="end", mono=True)
+
+    ledger(240, [("billing__D", "success", "final")], w=204)
+    ledger(470, [("billing__D", "superseded", "neutral"), ("billing__D__r1", "success", "final")])
+    ledger(870, [("billing__D", "superseded", "neutral"),
+                 ("billing__D__r1", "superseded", "neutral"),
+                 ("billing__D__r2", "success", "final")])
+    check(s, 1178, 330, "3 runs,")
+    s.text(1192, 346, "this order", 11.5, "ink", 700)
+
+    bar(s, 230, 454, 418, 482, "final", "original bills")
+    bar(s, 460, 854, 418, 482, "failure", "wrong bills")
+    check(s, 680, 460, "all 50 changed")
+    bar(s, 860, 1260, 418, 482, "final", "corrected bills")
+    check(s, 1050, 460, "all 50 wrong bills replaced")
+
+    def history(x, sets):  # noqa: ANN001
+        for i, (label, role) in enumerate(sets):
+            y = 496 + i * 36
+            s.box(x, y, 220, 30, role, r=5, sw=1)
+            s.text(x + 10, y + 20, label, 11.5, "ink", 600)
+
+    history(240, [("original (50)", "final")])
+    history(470, [("original (50)", "final"), ("wrong, from r1 (50)", "failure")])
+    history(870, [("original (50)", "final"), ("wrong, from r1 (50)", "failure"),
+                  ("corrected, from r2 (50)", "final")])
+    check(s, 1100, 586, "all 3 runs kept")
+
+    s.text(24, s.h - 52, "Corrected bills equal the originals to the cent unless late readings "
+           "reached the raw copy after the first run; a restatement bills those too.", 11.5,
+           "muted", maxw=s.w - 48)
+    s.legend(s.h - 22, ["final", "failure", "control", "neutral"])
+
+
+DRILLS_DESC = (
+    "Timeline of the five alert drills in scripts/inject_faults.sh, in real minutes. stale "
+    "stops meter-producer; MeterDataStale fires for all five zones after about 3 minutes and "
+    "the drill takes about 4. rejects restarts the producer with 15 percent null fields; "
+    "HighRejectRate fires after about 2 minutes, about 3 in total. renewable changes nothing "
+    "and waits for simulated dusk, when LowRenewableContribution fires for all five zones, up "
+    "to 7 minutes. sla pauses the daily_billing DAG; BatchSLAMiss fires 15 minutes after the "
+    "last billing, 15 to 17 minutes in total. divergence makes 60 percent of readings 3 to 5 "
+    "simulated hours late; LambdaDivergenceHigh fires after 8 to 13 minutes. Every drill "
+    "undoes its change on any exit; running all of them overlaps the SLA wait with the first "
+    "three, about 30 minutes."
+)
+
+
+def scenario_drills(s: Svg) -> None:
+    s.header(
+        "Scenario · The five alert drills   (voltstream.ps1 faults · make faults s=<name>)",
+        "scripts/inject_faults.sh breaks one thing, waits until Alertmanager shows the alert, "
+        "then undoes it. Real minutes; ranges vary by run.",
+    )
+    x0, ppm = 400, 38.0  # minutes → pixels
+
+    def mx(minutes: float) -> float:
+        return x0 + minutes * ppm
+
+    top, rh = 150, 74
+    for m in range(0, 18):
+        x = mx(m)
+        dash = "" if m % 5 == 0 else ' stroke-dasharray="2 4"'
+        s.body.append(f'<line x1="{x}" y1="{top - 8}" x2="{x}" y2="{top + 5 * rh}" '
+                      f'stroke="{s.t["line"]}" stroke-width="{1 if m % 5 else 1.4}"{dash}/>')
+        if m % 2 == 0:
+            s.text(x, top - 14, f"{m} min", 11, "muted", anchor="middle")
+    s.text(24, top - 14, "drill · what it breaks", 12, "muted", 700)
+
+    # (name, break, alert, severity, fires_from, fires_to, done_from, done_to)
+    drills = [
+        ("stale", "docker stop meter-producer", "MeterDataStale ×5 zones", "critical",
+         3, 3, 4, 4),
+        ("rejects", "producer: null_field_rate 0.15", "HighRejectRate", "warning", 2, 2, 3, 3),
+        ("renewable", "nothing: waits for dusk", "LowRenewable… ×5 zones", "warning",
+         0, 7, 0, 7),
+        ("sla", "airflow dags pause daily_billing", "BatchSLAMiss", "critical", 15, 15, 15, 17),
+        ("divergence", "producer: 60 % of readings", "LambdaDivergenceHigh", "warning",
+         8, 13, 8, 13),
+    ]
+    for i, (name, brk, alert, sev, f0, f1, d0, d1) in enumerate(drills):
+        y = top + i * rh
+        s.rect(20, y + 4, s.w - 40, rh - 8, s.t["panel"], None, r=6)
+        s.text(34, y + 28, name, 14, "ink", 700, mono=True)
+        s.text(34, y + 48, brk, 11, "muted", mono=True, maxw=370)
+        if name == "divergence":
+            s.text(34, y + 63, "3–5 simulated hours late", 11, "muted", mono=True)
+        # fault in place, from the break until it is undone
+        s.box(mx(0), y + 16, mx(d1) - mx(0), 26, "failure", r=5, sw=1)
+        if f1 > f0:  # the alert fires somewhere in this window
+            s.rect(mx(f0), y + 16, mx(f1) - mx(f0), 26, s.col("failure"), None, r=5)
+            s.text(mx(f0) + 8, y + 33.5, "fires in this window", 11, "bg", 700)
+        else:
+            s.body.append(f'<circle cx="{mx(f0)}" cy="{y + 29}" r="7" fill="{s.col("failure")}"/>')
+        s.text(1066, y + 28, alert, 12, "ink", 700, mono=True, maxw=190)
+        after = "clears at dawn" if name == "renewable" else "undone, then clears"
+        s.text(1066, y + 45, f"{sev} · {after}", 11, "muted", maxw=190)
+        if d1 > d0 and f1 == f0:
+            s.text(mx(f0) - 10, y + 60, "fires at 15 min · undo 0–2 min more", 10.5, "muted",
+                   anchor="end")
+
+    s.box(20, top + 5 * rh + 14, s.w - 40, 52, "control", r=8)
+    s.text(36, top + 5 * rh + 36, "make faults (all) runs the sla wait alongside stale, rejects "
+           "and renewable, then divergence: about 30 minutes. Each change is undone on any "
+           "exit,", 12, "ink", maxw=s.w - 72)
+    s.text(36, top + 5 * rh + 54, "Ctrl+C included. Which signal feeds which alert: diagram 5.",
+           12, "ink", maxw=s.w - 72)
+    s.legend(s.h - 22, ["failure", "control"])
+
+
+# =========================================================================================
 
 DIAGRAMS = [
+    ("00-overview", 1280, 660, "Voltstream: the idea in one picture", OVERVIEW_DESC, overview),
     ("01-data-flow", 1280, 940, "Voltstream data flow: where a meter reading goes", DATA_FLOW_DESC,
      data_flow),
     ("02-day-sequence", 1300, 1350, "Voltstream: one simulated day, from reading to final bill",
@@ -1050,6 +1450,14 @@ DIAGRAMS = [
     ("04-fault-handling", 1280, 740, "Voltstream: how each injected fault is handled",
      FAULTS_DESC, faults),
     ("05-alerting", 1280, 740, "Voltstream: how a problem reaches someone", ALERTS_DESC, alerting),
+    ("06-scenario-demo", 1280, 640, "Voltstream scenario: provisional to final", DEMO_DESC,
+     scenario_demo),
+    ("07-scenario-kill", 1280, 640, "Voltstream scenario: crash the speed layer", KILL_DESC,
+     scenario_kill),
+    ("08-scenario-restate", 1280, 700, "Voltstream scenario: restate a day", RESTATE_DESC,
+     scenario_restate),
+    ("09-scenario-drills", 1280, 660, "Voltstream scenario: the five alert drills", DRILLS_DESC,
+     scenario_drills),
 ]
 
 

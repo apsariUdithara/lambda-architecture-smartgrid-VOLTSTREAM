@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="660" viewBox="0 0 1280 660" role="img" aria-labelledby="title desc">
+<title id="title">Voltstream: the idea in one picture</title>
+<desc id="desc">Overview. Fifty simulated smart meters send a reading every 2 seconds into one Kafka stream. A fast path, the speed layer, adds the readings up within seconds but uses yesterday's prices and skips readings that arrive very late, so its bill is an estimate. Every reading is also kept unchanged in a raw copy. Once a day ends and that day's price list arrives, a slow path, the batch layer, re-reads every reading of the day with the right prices and produces the exact bill. The API gives one answer: the exact bill if it is ready, otherwise the estimate, and the dashboard shows a Provisional or Final badge.</desc>
+<defs><marker id="ah-final-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#72a2ec"/></marker><marker id="ah-muted-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9aa6bc"/></marker><marker id="ah-provisional-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e6a743"/></marker><marker id="ah-simulated-f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ad8eec"/></marker></defs>
+<rect width="1280" height="660" fill="#0e131b"/>
+<text x="24.0" y="38.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="650" fill="#e3e9f2" text-anchor="start">The idea in one picture</text>
+<text x="24.0" y="61.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#9aa6bc" text-anchor="start">One stream of meter readings, two ways of adding it up, one answer. Grey text is the name in the code; diagrams 1–5 have the detail.</text>
+<rect x="24.0" y="190.0" width="190.0" height="128.0" rx="12" fill="#29283f" stroke="#ad8eec" stroke-width="1.6"/>
+<text x="40.0" y="218.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#e3e9f2" text-anchor="start">Smart meters</text>
+<text x="40.0" y="242.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">50 homes, 5 zones</text>
+<text x="40.0" y="262.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">a reading every 2 s</text>
+<text x="40.0" y="304.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="400" fill="#6b7890" text-anchor="start">meter-producer</text>
+<rect x="24.0" y="400.0" width="190.0" height="128.0" rx="12" fill="#29283f" stroke="#ad8eec" stroke-width="1.6"/>
+<text x="40.0" y="428.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#e3e9f2" text-anchor="start">Price list</text>
+<text x="40.0" y="452.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">one file per day,</text>
+<text x="40.0" y="472.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">sent when the day ends</text>
+<text x="40.0" y="514.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="400" fill="#6b7890" text-anchor="start">reference-dropper</text>
+<rect x="256.0" y="190.0" width="176.0" height="128.0" rx="12" fill="#172030" stroke="#38465e" stroke-width="1.6"/>
+<text x="272.0" y="218.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#e3e9f2" text-anchor="start">One stream</text>
+<text x="272.0" y="242.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">every reading,</text>
+<text x="272.0" y="262.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">kept in order</text>
+<text x="272.0" y="304.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="400" fill="#6b7890" text-anchor="start">Kafka</text>
+<rect x="480.0" y="96.0" width="316.0" height="148.0" rx="12" fill="#332c22" stroke="#e6a743" stroke-width="1.6"/>
+<text x="496.0" y="124.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#e3e9f2" text-anchor="start">Fast path · seconds</text>
+<text x="496.0" y="148.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">Adds readings up as they arrive.</text>
+<text x="496.0" y="168.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">Uses yesterday's prices and skips</text>
+<text x="496.0" y="188.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">very late readings: an estimate.</text>
+<text x="496.0" y="230.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="400" fill="#6b7890" text-anchor="start">speed-layer · Spark Streaming</text>
+<rect x="480.0" y="268.0" width="316.0" height="92.0" rx="12" fill="#1f2b3f" stroke="#72a2ec" stroke-width="1.6"/>
+<text x="496.0" y="296.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#e3e9f2" text-anchor="start">Raw copy, never changed</text>
+<text x="496.0" y="320.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">every reading, kept for re-reading</text>
+<text x="496.0" y="346.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="400" fill="#6b7890" text-anchor="start">raw-archiver → Parquet in MinIO</text>
+<rect x="480.0" y="384.0" width="316.0" height="148.0" rx="12" fill="#1f2b3f" stroke="#72a2ec" stroke-width="1.6"/>
+<text x="496.0" y="412.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#e3e9f2" text-anchor="start">Slow path · once a day</text>
+<text x="496.0" y="436.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">When the day is over, re-reads every</text>
+<text x="496.0" y="456.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">reading with that day's prices.</text>
+<text x="496.0" y="476.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">The exact bill.</text>
+<text x="496.0" y="518.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="400" fill="#6b7890" text-anchor="start">Airflow + Spark · daily_billing</text>
+<rect x="846.0" y="214.0" width="196.0" height="214.0" rx="12" fill="#172030" stroke="#38465e" stroke-width="1.6"/>
+<text x="862.0" y="242.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#e3e9f2" text-anchor="start">One answer</text>
+<text x="862.0" y="266.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">Is the exact bill</text>
+<text x="862.0" y="286.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">for this day ready?</text>
+<text x="862.0" y="306.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#72a2ec" text-anchor="start">yes → Final</text>
+<text x="862.0" y="326.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="600" fill="#e6a743" text-anchor="start">no  → Provisional</text>
+<text x="862.0" y="414.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="400" fill="#6b7890" text-anchor="start">voltstream-api</text>
+<rect x="1080.0" y="214.0" width="176.0" height="214.0" rx="12" fill="#172030" stroke="#38465e" stroke-width="1.6"/>
+<text x="1096.0" y="242.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#e3e9f2" text-anchor="start">Dashboard</text>
+<text x="1096.0" y="266.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">refreshes every 5 s;</text>
+<text x="1096.0" y="286.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">the bill badge</text>
+<text x="1096.0" y="306.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">flips from</text>
+<text x="1096.0" y="326.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">Provisional to Final</text>
+<text x="1096.0" y="414.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="400" fill="#6b7890" text-anchor="start">localhost:8000</text>
+<path d="M214.0,254.0 L256.0,254.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M214.0,254.0 L256.0,254.0" fill="none" stroke="#ad8eec" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-simulated-f)"/>
+<path d="M432.0,230.0 L456.0,230.0 L456.0,170.0 L480.0,170.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M432.0,230.0 L456.0,230.0 L456.0,170.0 L480.0,170.0" fill="none" stroke="#e6a743" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-provisional-f)"/>
+<path d="M432.0,290.0 L480.0,290.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M432.0,290.0 L480.0,290.0" fill="none" stroke="#72a2ec" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<path d="M638.0,360.0 L638.0,384.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M638.0,360.0 L638.0,384.0" fill="none" stroke="#72a2ec" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<path d="M214.0,464.0 L480.0,464.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M214.0,464.0 L480.0,464.0" fill="none" stroke="#ad8eec" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-simulated-f)"/>
+<rect x="229.0" y="444.0" width="188.3" height="17.0" rx="3" fill="#0e131b"/>
+<text x="232.0" y="456.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#ad8eec" text-anchor="start">triggers + prices the slow path</text>
+<path d="M796.0,170.0 L820.0,170.0 L820.0,270.0 L846.0,270.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M796.0,170.0 L820.0,170.0 L820.0,270.0 L846.0,270.0" fill="none" stroke="#e6a743" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-provisional-f)"/>
+<rect x="797.0" y="148.0" width="53.0" height="17.0" rx="3" fill="#0e131b"/>
+<text x="800.0" y="160.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#e6a743" text-anchor="start">estimate</text>
+<path d="M796.0,458.0 L820.0,458.0 L820.0,370.0 L846.0,370.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M796.0,458.0 L820.0,458.0 L820.0,370.0 L846.0,370.0" fill="none" stroke="#72a2ec" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-final-f)"/>
+<rect x="797.0" y="466.0" width="64.8" height="17.0" rx="3" fill="#0e131b"/>
+<text x="800.0" y="478.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#72a2ec" text-anchor="start">exact bill</text>
+<path d="M1042.0,320.0 L1080.0,320.0" fill="none" stroke="#0e131b" stroke-width="6.6" stroke-linejoin="round"/>
+<path d="M1042.0,320.0 L1080.0,320.0" fill="none" stroke="#9aa6bc" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#ah-muted-f)"/>
+<rect x="24.0" y="556.0" width="1232.0" height="48.0" rx="8" fill="#193135" stroke="#4cc4b2" stroke-width="1.3"/>
+<text x="40.0" y="586.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#e3e9f2" text-anchor="start">Time runs 288× fast: one simulated day = 5 real minutes. Prometheus, Alertmanager and Grafana watch every box above (diagram 5).</text>
+<rect x="24.0" y="627.0" width="24.0" height="14.0" rx="3" fill="#29283f" stroke="#ad8eec" stroke-width="1.3"/>
+<text x="55.0" y="638.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">simulated source</text>
+<rect x="174.4" y="627.0" width="24.0" height="14.0" rx="3" fill="#332c22" stroke="#e6a743" stroke-width="1.3"/>
+<text x="205.4" y="638.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">speed · provisional</text>
+<rect x="343.4" y="627.0" width="24.0" height="14.0" rx="3" fill="#1f2b3f" stroke="#72a2ec" stroke-width="1.3"/>
+<text x="374.4" y="638.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">batch · final</text>
+<rect x="475.1" y="627.0" width="24.0" height="14.0" rx="3" fill="#193135" stroke="#4cc4b2" stroke-width="1.3"/>
+<text x="506.1" y="638.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">orchestration, monitoring</text>
+<rect x="681.3" y="627.0" width="24.0" height="14.0" rx="3" fill="#172030" stroke="#38465e" stroke-width="1.3"/>
+<text x="712.3" y="638.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#9aa6bc" text-anchor="start">infrastructure</text>
+</svg>

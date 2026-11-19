@@ -42,12 +42,13 @@ tariff file arrives once per simulated day. Two consumers need opposite things:
 - **Billing** wants an **exact, auditable** bill per household per day, using that day's
   tariff and including late readings, which is only possible after the day closes.
 
-A Lambda architecture serves both from one Kafka stream:
+A Lambda architecture serves both from one stream of readings: a fast path for "now", a slow
+path for "exact", and one API that picks the better answer available.
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/01-data-flow-dark.svg">
-    <img src="docs/architecture/diagrams/01-data-flow-light.svg" alt="meter-producer publishes readings to the Kafka topic meter.readings, which raw-archiver copies unchanged into Parquet in MinIO and speed-layer aggregates into provisional Postgres tables, rejecting bad records to rejected_records and a DLQ topic nothing consumes. When a day closes, reference-dropper's tariff file triggers the Airflow daily_billing DAG, which rescans the day from Parquet and writes the final bill tables. The API serves the batch bill if the day is finalised, otherwise the speed estimate.">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/00-overview-dark.svg">
+    <img src="docs/architecture/diagrams/00-overview-light.svg" alt="Smart meters send a reading every 2 seconds into one stream. A fast path adds them up within seconds using yesterday's prices, giving an estimate; every reading is also kept unchanged in a raw copy. When a day ends its price list arrives, and a slow path re-reads the whole day with the right prices, giving the exact bill. The API answers with the exact bill if it is ready, otherwise the estimate, and the dashboard badge flips from Provisional to Final.">
   </picture>
 </p>
 
@@ -64,6 +65,21 @@ test proves the pure-Python and Spark versions give identical bills.
 
 **Simulated time:** one simulated day = **5 real minutes** (288× faster), starting at
 2026-01-01 00:00 when the stack starts.
+
+### How it works in detail
+
+The picture above is all you need to run the project. The diagrams below are for reading the
+code: every box, arrow and label is a real service, table, topic or function. Colours mean the
+same thing in all of them, and numbered steps in one are referred to by the others.
+
+**Where every reading goes**, and which part writes each table:
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/01-data-flow-dark.svg">
+    <img src="docs/architecture/diagrams/01-data-flow-light.svg" alt="meter-producer publishes readings to the Kafka topic meter.readings, which raw-archiver copies unchanged into Parquet in MinIO and speed-layer aggregates into provisional Postgres tables, rejecting bad records to rejected_records and a DLQ topic nothing consumes. When a day closes, reference-dropper's tariff file triggers the Airflow daily_billing DAG, which rescans the day from Parquet and writes the final bill tables. The API serves the batch bill if the day is finalised, otherwise the speed estimate.">
+  </picture>
+</p>
 
 ### One simulated day
 
@@ -206,6 +222,48 @@ day be billed first (about 8 minutes after start).
 | One alert             | `faults -Scenario stale` (`rejects`, `sla`, `renewable`, `divergence`) | `make faults s=stale`        | A single alert                                             | 3–17 min |
 | Crash the speed layer | `killtest`                                                             | `make kill-test`             | Losing the speed layer costs freshness, never correctness  | 7–10 min |
 | Restate a day         | `backfill -Date 2026-01-02`                                            | `make backfill d=2026-01-02` | A corrupted tariff fixed by recomputing, with history kept | 6–8 min  |
+
+What each scenario does, step by step, and what it checks (✓ marks the script's own checks):
+
+### Provisional → final (`demo`)
+
+The same household's bill for the same day, asked for before and after the day is billed.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/06-scenario-demo-dark.svg">
+    <img src="docs/architecture/diagrams/06-scenario-demo-light.svg" alt="While day D is open, the bill for HH-0001 comes from the speed layer, marked provisional and priced with the previous day's tariff, and the dashboard badge reads Provisional. At simulated midnight the day closes; within about two minutes the batch layer rescans it and commits the bills. The same request then returns the batch bill, marked final and priced with day D's tariff, the badge reads Final, and the delta endpoint splits the difference into a tariff effect and a data effect.">
+  </picture>
+</p>
+
+### Crash the speed layer (`killtest`)
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/07-scenario-kill-dark.svg">
+    <img src="docs/architecture/diagrams/07-scenario-kill-light.svg" alt="The speed layer is killed for 60 seconds. The raw copy keeps receiving every reading, the live zone view goes stale, and an already billed day's bill is served unchanged. After a restart the speed layer re-reads from its checkpoint and catches up. When the day of the kill closes it is billed in full from the raw copy: 50 bills, with as many readings as the day before.">
+  </picture>
+</p>
+
+### Restate a day (`backfill`)
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/08-scenario-restate-dark.svg">
+    <img src="docs/architecture/diagrams/08-scenario-restate-light.svg" alt="A billed day's price list is corrupted and the day re-run: all 50 bills change, the original run becomes superseded and the new run success. The price list is restored and the day re-run again: all 50 wrong bills are replaced. The API serves only the latest run's bills, while the history table keeps all three sets and the run ledger keeps all three runs.">
+  </picture>
+</p>
+
+### The five alert drills (`faults`)
+
+Each drill breaks one thing, waits until Alertmanager shows the alert, then undoes it.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/diagrams/09-scenario-drills-dark.svg">
+    <img src="docs/architecture/diagrams/09-scenario-drills-light.svg" alt="Timeline of the five drills in real minutes. Stopping the meter producer fires MeterDataStale after about 3 minutes; 15 percent invalid readings fire HighRejectRate after about 2; LowRenewableContribution fires at simulated dusk within 7 minutes with no change at all; pausing the billing DAG fires BatchSLAMiss 15 minutes after the last billing; making 60 percent of readings hours late fires LambdaDivergenceHigh after 8 to 13 minutes.">
+  </picture>
+</p>
 
 Where each alert gets its data, and where it ends up:
 

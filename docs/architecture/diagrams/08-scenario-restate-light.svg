@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="700" viewBox="0 0 1280 700" role="img" aria-labelledby="title desc">
+<title id="title">Voltstream scenario: restate a day</title>
+<desc id="desc">Scenario diagram for scripts/backfill.sh, restating an already billed day D. The script corrupts block_1_rate by 45.00 in every row of tariff_D.csv and runs billing again as billing__D__r1: all 50 bills change, the original run becomes superseded and r1 becomes success. It then restores the original file and runs billing__D__r2: all 50 wrong bills are replaced, r1 becomes superseded and r2 success. household_bill_daily, which the API serves, holds only the latest bills, while household_bill_history keeps all three sets. The original tariff file is restored on any exit.</desc>
+<defs></defs>
+<rect width="1280" height="700" fill="#f6f8fb"/>
+<text x="24.0" y="38.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="650" fill="#172033" text-anchor="start">Scenario · Restate a day   (voltstream.ps1 backfill -Date D · make backfill d=D)</text>
+<text x="24.0" y="61.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="400" fill="#4e5a71" text-anchor="start">scripts/backfill.sh: a wrong price list is fixed by re-running the day, not by editing bills. Each run is a new Airflow run of the same DAG.</text>
+<text x="234.0" y="111.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#172033" text-anchor="start">Before</text>
+<text x="234.0" y="130.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">D billed once, normally</text>
+<line x1="225" y1="96" x2="225" y2="620" stroke="#b8c2d3" stroke-width="1" stroke-dasharray="2 4"/>
+<circle cx="472.0" cy="106.0" r="9" fill="#172033"/>
+<text x="472.0" y="109.8" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#f6f8fb" text-anchor="middle">1</text>
+<text x="488.0" y="111.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#172033" text-anchor="start">Corrupt the price list, re-run</text>
+<text x="464.0" y="130.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">the wrong bills, on purpose</text>
+<line x1="455" y1="96" x2="455" y2="620" stroke="#b8c2d3" stroke-width="1" stroke-dasharray="2 4"/>
+<circle cx="872.0" cy="106.0" r="9" fill="#172033"/>
+<text x="872.0" y="109.8" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#f6f8fb" text-anchor="middle">2</text>
+<text x="888.0" y="111.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="13" font-weight="700" fill="#172033" text-anchor="start">Restore it, re-run</text>
+<text x="864.0" y="130.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="400" fill="#4e5a71" text-anchor="start">the corrected bills</text>
+<line x1="855" y1="96" x2="855" y2="620" stroke="#b8c2d3" stroke-width="1" stroke-dasharray="2 4"/>
+<rect x="20.0" y="146.0" width="1240.0" height="64.0" rx="6" fill="#ebeff6"/>
+<text x="32.0" y="176.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="650" fill="#172033" text-anchor="start">Price list for D</text>
+<text x="32.0" y="192.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="400" fill="#8a94a8" text-anchor="start">landing tariff_D.csv</text>
+<rect x="20.0" y="218.0" width="1240.0" height="64.0" rx="6" fill="#ebeff6"/>
+<text x="32.0" y="248.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="650" fill="#172033" text-anchor="start">Billing run</text>
+<text x="32.0" y="264.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="400" fill="#8a94a8" text-anchor="start">airflow daily_billing</text>
+<rect x="20.0" y="290.0" width="1240.0" height="120.0" rx="6" fill="#ebeff6"/>
+<text x="32.0" y="348.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="650" fill="#172033" text-anchor="start">Run ledger</text>
+<text x="32.0" y="364.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="400" fill="#8a94a8" text-anchor="start">pipeline_runs</text>
+<rect x="20.0" y="418.0" width="1240.0" height="64.0" rx="6" fill="#ebeff6"/>
+<text x="32.0" y="448.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="650" fill="#172033" text-anchor="start">What the API serves</text>
+<text x="32.0" y="464.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="400" fill="#8a94a8" text-anchor="start">household_bill_daily</text>
+<rect x="20.0" y="490.0" width="1240.0" height="120.0" rx="6" fill="#ebeff6"/>
+<text x="32.0" y="548.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12.5" font-weight="650" fill="#172033" text-anchor="start">Every run's bills</text>
+<text x="32.0" y="564.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="10.5" font-weight="400" fill="#8a94a8" text-anchor="start">household_bill_history</text>
+<rect x="230.0" y="152.0" width="224.0" height="52.0" rx="6" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1.2"/>
+<text x="240.0" y="182.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">original</text>
+<rect x="460.0" y="152.0" width="394.0" height="52.0" rx="6" fill="#f0e2e5" stroke="#bb2f2f" stroke-width="1.2"/>
+<text x="470.0" y="182.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">block_1_rate + 45.00 in every row</text>
+<rect x="860.0" y="152.0" width="400.0" height="52.0" rx="6" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1.2"/>
+<text x="870.0" y="175.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">original, put back</text>
+<text x="870.0" y="191.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start">also restored on any exit, Ctrl+C included</text>
+<rect x="230.0" y="224.0" width="224.0" height="52.0" rx="6" fill="#dce9eb" stroke="#0d7366" stroke-width="1.2"/>
+<text x="240.0" y="254.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">billing__D</text>
+<rect x="460.0" y="224.0" width="394.0" height="52.0" rx="6" fill="#dce9eb" stroke="#0d7366" stroke-width="1.2"/>
+<text x="470.0" y="247.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">billing__D__r1</text>
+<text x="470.0" y="263.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start">waits 90 s grace, rescans D</text>
+<rect x="860.0" y="224.0" width="400.0" height="52.0" rx="6" fill="#dce9eb" stroke="#0d7366" stroke-width="1.2"/>
+<text x="870.0" y="247.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">billing__D__r2</text>
+<text x="870.0" y="263.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="400" fill="#4e5a71" text-anchor="start">waits 90 s grace, rescans D</text>
+<rect x="240.0" y="298.0" width="204.0" height="30.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="250.0" y="318.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">billing__D</text>
+<text x="434.0" y="318.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="700" fill="#172033" text-anchor="end">success</text>
+<rect x="470.0" y="298.0" width="300.0" height="30.0" rx="5" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1"/>
+<text x="480.0" y="318.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">billing__D</text>
+<text x="760.0" y="318.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="700" fill="#172033" text-anchor="end">superseded</text>
+<rect x="470.0" y="334.0" width="300.0" height="30.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="480.0" y="354.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">billing__D__r1</text>
+<text x="760.0" y="354.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="700" fill="#172033" text-anchor="end">success</text>
+<rect x="870.0" y="298.0" width="300.0" height="30.0" rx="5" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1"/>
+<text x="880.0" y="318.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">billing__D</text>
+<text x="1160.0" y="318.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="700" fill="#172033" text-anchor="end">superseded</text>
+<rect x="870.0" y="334.0" width="300.0" height="30.0" rx="5" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1"/>
+<text x="880.0" y="354.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">billing__D__r1</text>
+<text x="1160.0" y="354.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="700" fill="#172033" text-anchor="end">superseded</text>
+<rect x="870.0" y="370.0" width="300.0" height="30.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="880.0" y="390.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="600" fill="#172033" text-anchor="start">billing__D__r2</text>
+<text x="1160.0" y="390.0" font-family="ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Consolas, Menlo, monospace" font-size="11" font-weight="700" fill="#172033" text-anchor="end">success</text>
+<text x="1178.0" y="330.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#172033" text-anchor="start">✓ 3 runs,</text>
+<text x="1192.0" y="346.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#172033" text-anchor="start">this order</text>
+<rect x="230.0" y="424.0" width="224.0" height="52.0" rx="6" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1.2"/>
+<text x="240.0" y="454.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">original bills</text>
+<rect x="460.0" y="424.0" width="394.0" height="52.0" rx="6" fill="#f0e2e5" stroke="#bb2f2f" stroke-width="1.2"/>
+<text x="470.0" y="454.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">wrong bills</text>
+<text x="680.0" y="460.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#172033" text-anchor="start">✓ all 50 changed</text>
+<rect x="860.0" y="424.0" width="400.0" height="52.0" rx="6" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1.2"/>
+<text x="870.0" y="454.5" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" fill="#172033" text-anchor="start">corrected bills</text>
+<text x="1050.0" y="460.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#172033" text-anchor="start">✓ all 50 wrong bills replaced</text>
+<rect x="240.0" y="496.0" width="220.0" height="30.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="250.0" y="516.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#172033" text-anchor="start">original (50)</text>
+<rect x="470.0" y="496.0" width="220.0" height="30.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="480.0" y="516.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#172033" text-anchor="start">original (50)</text>
+<rect x="470.0" y="532.0" width="220.0" height="30.0" rx="5" fill="#f0e2e5" stroke="#bb2f2f" stroke-width="1"/>
+<text x="480.0" y="552.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#172033" text-anchor="start">wrong, from r1 (50)</text>
+<rect x="870.0" y="496.0" width="220.0" height="30.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="880.0" y="516.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#172033" text-anchor="start">original (50)</text>
+<rect x="870.0" y="532.0" width="220.0" height="30.0" rx="5" fill="#f0e2e5" stroke="#bb2f2f" stroke-width="1"/>
+<text x="880.0" y="552.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#172033" text-anchor="start">wrong, from r1 (50)</text>
+<rect x="870.0" y="568.0" width="220.0" height="30.0" rx="5" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1"/>
+<text x="880.0" y="588.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="600" fill="#172033" text-anchor="start">corrected, from r2 (50)</text>
+<text x="1100.0" y="586.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#172033" text-anchor="start">✓ all 3 runs kept</text>
+<text x="24.0" y="648.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">Corrected bills equal the originals to the cent unless late readings reached the raw copy after the first run; a restatement bills those too.</text>
+<rect x="24.0" y="667.0" width="24.0" height="14.0" rx="3" fill="#e0e7f2" stroke="#2a5ea8" stroke-width="1.3"/>
+<text x="55.0" y="678.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">batch · final</text>
+<rect x="155.7" y="667.0" width="24.0" height="14.0" rx="3" fill="#f0e2e5" stroke="#bb2f2f" stroke-width="1.3"/>
+<text x="186.7" y="678.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">rejected / failed</text>
+<rect x="312.3" y="667.0" width="24.0" height="14.0" rx="3" fill="#dce9eb" stroke="#0d7366" stroke-width="1.3"/>
+<text x="343.3" y="678.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">orchestration, monitoring</text>
+<rect x="518.5" y="667.0" width="24.0" height="14.0" rx="3" fill="#ebeff6" stroke="#b8c2d3" stroke-width="1.3"/>
+<text x="549.5" y="678.0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4e5a71" text-anchor="start">infrastructure</text>
+</svg>
